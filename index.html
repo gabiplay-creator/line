@@ -5,12 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>인테리어 견적 계산기</title>
   <link rel="stylesheet" href="style.css">
+  <!-- SheetJS for Excel export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
   <div class="wrap">
     <div class="header">
       <h1>인테리어 견적 계산기</h1>
       <p class="sub">항목 선택 후 수량 입력 → 자동 견적 계산 (총 11개 카테고리)</p>
+    </div>
+
+    <!-- 고객 정보 입력 -->
+    <div class="client-info-box">
+      <div class="client-grid">
+        <div class="client-field">
+          <label>고객명</label>
+          <input type="text" id="clientName" placeholder="홍길동 님">
+        </div>
+        <div class="client-field">
+          <label>연락처</label>
+          <input type="text" id="clientPhone" placeholder="010-0000-0000">
+        </div>
+        <div class="client-field">
+          <label>주소 / 평형</label>
+          <input type="text" id="clientAddr" placeholder="소사본동 삼익 32평">
+        </div>
+        <div class="client-field">
+          <label>시공 예상기간</label>
+          <input type="text" id="clientPeriod" placeholder="4주">
+        </div>
+        <div class="client-field">
+          <label>특이사항</label>
+          <input type="text" id="clientNote" placeholder="현장 특이사항">
+        </div>
+        <div class="client-field">
+          <label>견적서 작성일</label>
+          <input type="date" id="clientDate">
+        </div>
+      </div>
     </div>
 
     <div class="area-row">
@@ -24,6 +56,7 @@
     <div class="tabs" id="tabs"></div>
     <div id="content"></div>
 
+    <!-- 견적 요약 + 견적서 테이블 -->
     <div class="summary">
       <div class="summary-header">
         <span class="summary-title">견적 요약</span>
@@ -32,6 +65,105 @@
       <div class="sgrid" id="scards"></div>
       <div class="srows" id="srows"></div>
       <p class="note">* 부가세 별도 / 실제 견적은 현장 방문 후 변동 가능 / 평(평당) 단위 항목은 평수 자동 반영</p>
+    </div>
+
+    <!-- 견적서 (라인인테리어 형식) -->
+    <div class="quote-section" id="quote-section">
+      <div class="quote-actions">
+        <button class="btn-action btn-excel" id="btn-excel">⬇ 엑셀 다운로드</button>
+        <button class="btn-action btn-print" id="btn-print">🖨 인쇄 / PDF</button>
+      </div>
+
+      <div class="quote-doc" id="quote-doc">
+        <!-- 헤더 -->
+        <div class="qdoc-header">
+          <div class="qdoc-logo">라인 인테리어</div>
+          <div class="qdoc-title">견 적 서</div>
+        </div>
+
+        <!-- 고객 정보 테이블 -->
+        <table class="qinfo-table">
+          <tr>
+            <td class="qinfo-label">의뢰일</td>
+            <td id="qi-date" class="qinfo-val"></td>
+            <td class="qinfo-label">상호</td>
+            <td class="qinfo-val">라인 인테리어</td>
+          </tr>
+          <tr>
+            <td class="qinfo-label">고객명 / 연락처</td>
+            <td id="qi-client" class="qinfo-val"></td>
+            <td class="qinfo-label">등록번호</td>
+            <td class="qinfo-val">296-24-02323</td>
+          </tr>
+          <tr>
+            <td class="qinfo-label">주소 / 평형</td>
+            <td id="qi-addr" class="qinfo-val"></td>
+            <td class="qinfo-label">담당자</td>
+            <td class="qinfo-val">라인 인테리어</td>
+          </tr>
+          <tr>
+            <td class="qinfo-label">시공 예상기간</td>
+            <td id="qi-period" class="qinfo-val"></td>
+            <td class="qinfo-label">연락처</td>
+            <td class="qinfo-val">010-6420-3155</td>
+          </tr>
+          <tr>
+            <td class="qinfo-label">특이사항</td>
+            <td id="qi-note" class="qinfo-val" colspan="3"></td>
+          </tr>
+        </table>
+
+        <!-- 견적 항목 테이블 -->
+        <table class="qitem-table">
+          <thead>
+            <tr>
+              <th class="col-cat">품명</th>
+              <th class="col-name">내용</th>
+              <th class="col-unit">단위</th>
+              <th class="col-qty">수량</th>
+              <th class="col-price">단가</th>
+              <th class="col-amount">견적가</th>
+            </tr>
+          </thead>
+          <tbody id="qitem-body"></tbody>
+          <tfoot>
+            <tr class="qfoot-sub">
+              <td colspan="5" class="qfoot-label">소 계 (부가세 제외)</td>
+              <td class="qfoot-val" id="qf-sub"></td>
+            </tr>
+            <tr class="qfoot-vat">
+              <td colspan="5" class="qfoot-label">부가세 (10%)</td>
+              <td class="qfoot-val" id="qf-vat"></td>
+            </tr>
+            <tr class="qfoot-total">
+              <td colspan="5" class="qfoot-label">총 공사 금액</td>
+              <td class="qfoot-val" id="qf-total"></td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <!-- 계약 조건 -->
+        <table class="qcontract-table">
+          <tr>
+            <td class="qc-label">계약금 (20%)</td>
+            <td class="qc-val" id="qc-deposit"></td>
+            <td class="qc-label">1차 중도금 (30%)</td>
+            <td class="qc-val" id="qc-mid"></td>
+            <td class="qc-label">잔금 (50%)</td>
+            <td class="qc-val" id="qc-final"></td>
+          </tr>
+        </table>
+
+        <!-- 비고 -->
+        <div class="qdoc-footer">
+          <p>본 업체는 전문 기공 인력만 시공합니다. (연습생, 외국인 인력 제한)</p>
+          <p>부가세 별도 견적입니다. (계약금 30%, 시공후 잔금 70% 입금 기준)</p>
+          <div class="qdoc-sign">
+            <span>상기와 같이 계약합니다.</span>
+            <span class="sign-line">계약자 서명 : _______________</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

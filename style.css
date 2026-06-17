@@ -444,3 +444,282 @@ h1 {
     display: none;
   }
 }
+
+/* =====================
+   고객 정보 입력
+   ===================== */
+.client-info-box {
+  background: var(--color-bg-secondary);
+  border: 0.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 1.1rem;
+}
+
+.client-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.client-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.client-field label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.client-field input {
+  font-size: 12px;
+  padding: 5px 8px;
+  border: 0.5px solid var(--color-border-md);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+}
+
+.client-field input:focus {
+  border-color: var(--color-accent);
+}
+
+/* =====================
+   견적서 섹션
+   ===================== */
+.quote-section {
+  margin-top: 2rem;
+}
+
+.quote-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-action:hover { opacity: 0.85; }
+
+.btn-excel {
+  background: #1e7e34;
+  color: #fff;
+}
+
+.btn-print {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+/* ── 견적서 문서 ── */
+.quote-doc {
+  background: #fff;
+  color: #111;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 28px 32px;
+  font-family: 'Malgun Gothic', '맑은 고딕', Arial, sans-serif;
+  font-size: 12px;
+}
+
+.qdoc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 16px;
+  border-bottom: 2px solid #111;
+  padding-bottom: 8px;
+}
+
+.qdoc-logo {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.qdoc-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 6px;
+}
+
+/* 고객정보 테이블 */
+.qinfo-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.qinfo-table td {
+  padding: 5px 8px;
+  border: 0.5px solid #bbb;
+  font-size: 11px;
+}
+
+.qinfo-label {
+  background: #f0f0f0;
+  font-weight: 600;
+  white-space: nowrap;
+  width: 110px;
+  color: #333;
+}
+
+.qinfo-val {
+  min-width: 140px;
+  color: #111;
+}
+
+/* 항목 테이블 */
+.qitem-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0;
+}
+
+.qitem-table th {
+  background: #1a1a1a;
+  color: #fff;
+  padding: 7px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  border: 0.5px solid #333;
+}
+
+.qitem-table td {
+  padding: 5px 8px;
+  border: 0.5px solid #ddd;
+  font-size: 11px;
+  vertical-align: middle;
+}
+
+.col-cat   { width: 80px; }
+.col-name  { width: auto; }
+.col-unit  { width: 44px; text-align: center; }
+.col-qty   { width: 44px; text-align: center; }
+.col-price { width: 90px; text-align: right; }
+.col-amount{ width: 100px; text-align: right; }
+
+.qitem-table tbody tr:nth-child(odd) td {
+  background: #fafafa;
+}
+
+.qitem-table tbody tr:hover td {
+  background: #f0f6ff;
+}
+
+.qrow-cat td { font-weight: 700; background: #e8e8e8 !important; }
+.qrow-cat td:first-child { color: #1a1a1a; }
+
+.q-amount { text-align: right; font-weight: 500; }
+.q-price  { text-align: right; color: #555; }
+.q-center { text-align: center; }
+.q-name   { color: #222; }
+
+/* tfoot */
+.qitem-table tfoot td {
+  padding: 6px 8px;
+  font-size: 11px;
+  border: 0.5px solid #bbb;
+}
+
+.qfoot-label {
+  text-align: right;
+  font-weight: 600;
+  background: #f0f0f0;
+  color: #333;
+}
+
+.qfoot-val {
+  text-align: right;
+  font-weight: 700;
+  min-width: 100px;
+}
+
+.qfoot-sub .qfoot-val  { color: #333; }
+.qfoot-vat .qfoot-val  { color: #666; }
+.qfoot-total           { font-size: 13px; }
+.qfoot-total .qfoot-label { background: #1a1a1a; color: #fff; }
+.qfoot-total .qfoot-val   { background: #1a1a1a; color: #fff; font-size: 14px; }
+
+/* 계약 조건 */
+.qcontract-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.qcontract-table td {
+  padding: 6px 8px;
+  border: 0.5px solid #bbb;
+  font-size: 11px;
+}
+
+.qc-label {
+  background: #f0f0f0;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  color: #333;
+}
+
+.qc-val {
+  text-align: right;
+  font-weight: 700;
+  color: #111;
+}
+
+/* 하단 비고 */
+.qdoc-footer {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #ccc;
+  font-size: 10px;
+  color: #555;
+  line-height: 1.8;
+}
+
+.qdoc-sign {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #111;
+}
+
+.sign-line {
+  border-top: 1px solid #aaa;
+  padding-top: 4px;
+  min-width: 200px;
+  text-align: center;
+}
+
+/* ── 인쇄 ── */
+@media print {
+  body { background: #fff; }
+  .wrap { padding: 0; }
+  .header, .client-info-box, .area-row, .tabs,
+  #content, .summary, .quote-actions { display: none !important; }
+  .quote-section { margin: 0; }
+  .quote-doc {
+    border: none;
+    padding: 10mm 12mm;
+    font-size: 11px;
+  }
+  .qitem-table tbody tr:hover td { background: inherit; }
+}
