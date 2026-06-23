@@ -1,231 +1,317 @@
 /**
- * app.js — 인테리어 견적 계산기 메인 로직 v4
- * - 평수 연동 (pyAuto)
- * - pct 항목 후처리 계산
- * - 견적서 테이블 실시간 렌더링
- * - 엑셀 다운로드 (SheetJS)
- * - 인쇄 / PDF
+ * app.js — 인테리어 견적 계산기 v5
  */
 
-/* ── 상태 ── */
-const sel = {};
-Object.values(DATA).forEach(cat =>
-  cat.items.forEach(it => { sel[it.id] = { on: false, q: 0 }; })
-);
+/* ════════ 상태 ════════ */
+const sel = {};   // { id: { on, q, val } }
+const floorDemoSel = {}; // { fd_id: { on, q } }
+
+function initSel() {
+  Object.values(DATA).forEach(cat =>
+    cat.items.forEach(it => {
+      if (!sel[it.id]) sel[it.id] = { on: false, q: 1, val: 0, selectIdx: 0 };
+    })
+  );
+  FLOOR_DEMO_TYPES.forEach(ft => {
+    if (!floorDemoSel[ft.id]) floorDemoSel[ft.id] = { on: false, q: 1 };
+  });
+}
+
 let curCat = Object.keys(DATA)[0];
 
-/* ── 초기화 ── */
+/* ════════ 초기화 ════════ */
 document.addEventListener('DOMContentLoaded', () => {
-  // 오늘 날짜 기본값
-  document.getElementById('clientDate').value = new Date().toISOString().split('T')[0];
-
-  renderTabs();
-  renderItems();
-  calc();
-
+  initSel();
+  document.getElementById('clientDate').value = today();
+  renderTabs(); renderItems(); calc();
   document.getElementById('pyung').addEventListener('input', onPyungChange);
   document.getElementById('btn-reset').addEventListener('click', resetAll);
   document.getElementById('btn-excel').addEventListener('click', downloadExcel);
-  document.getElementById('btn-print').addEventListener('click', () => window.print());
-
-  // 고객정보 변경 시 견적서 갱신
+  document.getElementById('btn-print-detail').addEventListener('click', () => { setPrintMode('detail'); window.print(); });
+  document.getElementById('btn-print-simple').addEventListener('click', () => { setPrintMode('simple'); window.print(); });
   ['clientName','clientPhone','clientAddr','clientPeriod','clientNote','clientDate']
-    .forEach(id => document.getElementById(id).addEventListener('input', renderQuoteDoc));
+    .forEach(id => document.getElementById(id).addEventListener('input', () => renderQuoteDoc()));
 });
 
-/* ── 평수 변경 ── */
-function onPyungChange() {
-  const py = getPyung();
-  Object.values(DATA).forEach(cat =>
-    cat.items.forEach(it => {
-      if (it.pyAuto && sel[it.id].on)
-        sel[it.id].q = Math.max(1, Math.round(py));
-    })
-  );
-  renderItems();
-  calc();
-}
-
-function getPyung() {
-  return parseFloat(document.getElementById('pyung').value) || 0;
-}
-
+function today() { return new Date().toISOString().split('T')[0]; }
+function getPyung() { return parseFloat(document.getElementById('pyung').value) || 0; }
+function fmt(n) { return Math.round(n).toLocaleString('ko-KR'); }
+function fmtW(n) { return fmt(n) + '원'; }
 function findItem(id) {
-  for (const cat of Object.values(DATA))
-    for (const it of cat.items)
-      if (it.id === id) return it;
+  for (const c of Object.values(DATA)) for (const it of c.items) if (it.id === id) return it;
   return null;
 }
 
-function fmt(n) { return Math.round(n).toLocaleString('ko-KR'); }
+/* ════════ 평수 변경 ════════ */
+function onPyungChange() {
+  const py = getPyung();
+  Object.values(DATA).forEach(cat =>
+    cat.items.forEach(it => { if (it.pyAuto && sel[it.id]?.on) sel[it.id].q = Math.max(1, Math.round(py)); })
+  );
+  renderItems(); calc();
+}
 
-function fmtWon(n) { return fmt(n) + '원'; }
-
-/* ── 탭 ── */
+/* ════════ 탭 ════════ */
 function renderTabs() {
   document.getElementById('tabs').innerHTML = Object.keys(DATA)
-    .map(cat => `<div class="tab${cat === curCat ? ' on' : ''}" data-cat="${cat}">${cat}</div>`)
-    .join('');
-  document.querySelectorAll('.tab').forEach(el => {
-    el.addEventListener('click', () => { curCat = el.dataset.cat; renderTabs(); renderItems(); });
-  });
+    .map(c => `<div class="tab${c === curCat ? ' on' : ''}" data-cat="${c}">${c}</div>`).join('');
+  document.querySelectorAll('.tab').forEach(el =>
+    el.addEventListener('click', () => { curCat = el.dataset.cat; renderTabs(); renderItems(); })
+  );
 }
 
-/* ── 항목 렌더링 ── */
+/* ════════ 항목 렌더링 ════════ */
 function renderItems() {
-  const html = DATA[curCat].items.map(it => {
-    const s = sel[it.id];
-    const pyTag = it.pyAuto ? `<span class="pytag">평수연동</span>` : '';
-    const priceLabel = it.pct
-      ? `공사금 ${(it.pct * 100).toFixed(0)}% 자동`
-      : `${fmt(it.p)}원/${it.u}`;
+  const catData = DATA[curCat];
+  let html = '<div class="items">';
+  catData.items.forEach(it => { html += renderItem(it); });
+  html += '</div>';
+  document.getElementById('content').innerHTML = html;
+  bindItemEvents();
+}
 
-    const qtyHtml = s.on ? `
-      <div class="qty-row" onclick="event.stopPropagation()">
-        <button class="qbtn" data-id="${it.id}" data-d="-1">−</button>
-        <input class="qinput" type="number" value="${s.q}" min="0" max="9999" data-id="${it.id}">
-        <button class="qbtn" data-id="${it.id}" data-d="1">+</button>
-        <span class="iunit">${it.u}</span>
-      </div>` : '';
+function renderItem(it) {
+  const s = sel[it.id];
+  const isOn = s.on;
 
-    return `
-      <div class="item${s.on ? ' sel' : ''}" data-id="${it.id}">
-        <div class="chk">${s.on ? '✓' : ''}</div>
-        <div class="iinfo">
-          <div class="iname">${it.n}${pyTag}</div>
-          <div class="idesc">${it.d}</div>
-        </div>
-        <div class="iright">
-          <div class="iprice">${priceLabel}</div>
-          ${qtyHtml}
-        </div>
-      </div>`;
-  }).join('');
+  if (it.type === 'floor-demo') return renderFloorDemo(it, isOn);
+  if (it.type === 'mat-option') return renderMatOption(it, isOn);
 
-  document.getElementById('content').innerHTML = `<div class="items">${html}</div>`;
+  let priceLabel = '';
+  if (it.pct) priceLabel = `공사금 ${(it.pct*100).toFixed(0)}% 자동`;
+  else if (it.type === 'input') priceLabel = '직접 입력';
+  else if (it.type === 'select-price') priceLabel = it.options.map(o=>o.label).join(' / ');
+  else priceLabel = `${fmt(it.p)}원/${it.u}`;
 
-  document.getElementById('content').addEventListener('click', onItemClick);
-  document.querySelectorAll('.qbtn').forEach(btn => {
-    btn.addEventListener('click', e => { e.stopPropagation(); adj(btn.dataset.id, parseInt(btn.dataset.d)); });
+  let controlHtml = '';
+  if (isOn) {
+    if (it.type === 'stepper' || it.type === 'pyung-unit') {
+      controlHtml = `
+        <div class="qty-row" onclick="event.stopPropagation()">
+          <button class="qbtn" onclick="event.stopPropagation();adjQ('${it.id}',-1)">−</button>
+          <input class="qinput" type="number" value="${s.q}" min="1" max="9999" data-id="${it.id}" onclick="event.stopPropagation()" oninput="event.stopPropagation();setQv('${it.id}',this.value)">
+          <button class="qbtn" onclick="event.stopPropagation();adjQ('${it.id}',1)">+</button>
+          <span class="iunit">${it.u}</span>
+        </div>`;
+    } else if (it.type === 'select-price') {
+      const opts = it.options.map((o,i) => `<option value="${i}" ${s.selectIdx===i?'selected':''}>${o.label}${o.p?` (+${fmt(o.p)}원)`:''}</option>`).join('');
+      controlHtml = `<div class="qty-row" onclick="event.stopPropagation()"><select class="sel-input" data-id="${it.id}" onchange="event.stopPropagation();setSelect('${it.id}',this.value)">${opts}</select></div>`;
+    } else if (it.type === 'input') {
+      controlHtml = `
+        <div class="qty-row" onclick="event.stopPropagation()">
+          <input class="qinput wide" type="number" placeholder="금액 입력" value="${s.val||''}" data-id="${it.id}" onclick="event.stopPropagation()" oninput="event.stopPropagation();setVal('${it.id}',this.value)">
+          <span class="iunit">원</span>
+        </div>`;
+    }
+  }
+
+  const pytag = it.pyAuto ? `<span class="pytag">평수연동</span>` : '';
+  return `
+    <div class="item${isOn?' sel':''}" data-id="${it.id}">
+      <div class="chk">${isOn?'✓':''}</div>
+      <div class="iinfo">
+        <div class="iname">${it.n}${pytag}</div>
+        <div class="idesc">${it.d}</div>
+      </div>
+      <div class="iright">
+        <div class="iprice">${priceLabel}</div>
+        ${controlHtml}
+      </div>
+    </div>`;
+}
+
+/* 마루 철거 특수 렌더 */
+function renderFloorDemo(it, isOn) {
+  let inner = '';
+  if (isOn) {
+    inner = `<div class="floor-demo-grid" onclick="event.stopPropagation()">` +
+      FLOOR_DEMO_TYPES.map(ft => {
+        const fs = floorDemoSel[ft.id];
+        const u = ft.u || '평';
+        return `
+          <div class="fd-row${fs.on?' fd-on':''}">
+            <label class="fd-check" onclick="toggleFD('${ft.id}')">
+              <span class="fd-chk">${fs.on?'✓':''}</span>
+              <span class="fd-name">${ft.n}</span>
+              <span class="fd-price">${fmt(ft.p)}원/${u}</span>
+            </label>
+            ${fs.on ? `<div class="fd-qty">
+              <button onclick="adjFD('${ft.id}',-1)">−</button>
+              <input type="number" value="${fs.q}" min="1" max="999" onchange="setFD('${ft.id}',this.value)">
+              <button onclick="adjFD('${ft.id}',1)">+</button>
+              <span class="iunit">${u}</span>
+            </div>` : ''}
+          </div>`;
+      }).join('') + `</div>`;
+  }
+  return `
+    <div class="item item-wide${isOn?' sel':''}" data-id="${it.id}">
+      <div class="chk">${isOn?'✓':''}</div>
+      <div class="iinfo" style="flex:1">
+        <div class="iname">${it.n}</div>
+        <div class="idesc">${it.d}</div>
+        ${inner}
+      </div>
+    </div>`;
+}
+
+/* 영림 매트 옵션 특수 렌더 */
+function renderMatOption(it, isOn) {
+  const matBase = calcYoungDoorBase();
+  const addAmt = Math.round(matBase * 0.4);
+  return `
+    <div class="item${isOn?' sel':''}" data-id="${it.id}">
+      <div class="chk">${isOn?'✓':''}</div>
+      <div class="iinfo">
+        <div class="iname">${it.n}</div>
+        <div class="idesc">영림 더도어/오리지날 금액 합계의 40% 추가 (현재: ${fmtW(addAmt)})</div>
+      </div>
+      <div class="iright"><div class="iprice">${fmtW(addAmt)}</div></div>
+    </div>`;
+}
+
+function calcYoungDoorBase() {
+  let base = 0;
+  ['carp_young_door','carp_young_orig'].forEach(id => {
+    const it = findItem(id); const s = sel[id];
+    if (it && s?.on) base += it.p * s.q;
   });
-  document.querySelectorAll('.qinput').forEach(input => {
-    input.addEventListener('click', e => e.stopPropagation());
-    input.addEventListener('input', e => { e.stopPropagation(); setQ(input.dataset.id, input.value); });
+  return base;
+}
+
+/* ════════ 이벤트 바인딩 ════════ */
+function bindItemEvents() {
+  document.getElementById('content').querySelectorAll('.item[data-id]').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.closest('.qty-row,.floor-demo-grid,.fd-row,.fd-qty,.fd-check')) return;
+      togItem(el.dataset.id);
+    });
   });
 }
 
-function onItemClick(e) {
-  const itemEl = e.target.closest('.item');
-  if (!itemEl || e.target.closest('.qty-row')) return;
-  tog(itemEl.dataset.id);
-}
-
-function tog(id) {
-  const s = sel[id];
-  s.on = !s.on;
+function togItem(id) {
+  const s = sel[id]; s.on = !s.on;
+  const it = findItem(id);
   if (s.on) {
-    const it = findItem(id);
-    s.q = (it && it.pyAuto) ? Math.max(1, Math.round(getPyung())) : 1;
-  } else {
-    s.q = 0;
+    s.q = (it?.pyAuto) ? Math.max(1, Math.round(getPyung())) : 1;
+    if (it?.type === 'select-price') s.selectIdx = 0;
   }
   renderItems(); calc();
 }
+function adjQ(id, d) { const s = sel[id]; s.q = Math.max(1, s.q+d); renderItems(); calc(); }
+function setQv(id, v) { sel[id].q = Math.max(1, parseInt(v)||1); calc(); }
+function setVal(id, v) { sel[id].val = parseFloat(v)||0; calc(); }
+function setSelect(id, v) { sel[id].selectIdx = parseInt(v); calc(); }
+function toggleFD(fid) { const fs=floorDemoSel[fid]; fs.on=!fs.on; renderItems(); calc(); }
+function adjFD(fid, d) { const fs=floorDemoSel[fid]; fs.q=Math.max(1,fs.q+d); renderItems(); calc(); }
+function setFD(fid, v) { floorDemoSel[fid].q=Math.max(1,parseInt(v)||1); calc(); }
 
-function adj(id, d) {
-  const s = sel[id];
-  s.q = Math.max(0, s.q + d);
-  if (s.q === 0) s.on = false;
-  renderItems(); calc();
-}
-
-function setQ(id, v) {
-  const s = sel[id];
-  s.q = Math.max(0, parseInt(v) || 0);
-  if (s.q === 0) s.on = false;
-  renderItems(); calc();
-}
-
-/* ── 계산 ── */
+/* ════════ 금액 계산 ════════ */
 function calcTotals() {
   let baseSub = 0;
   const catMap = {};
-  const selectedItems = []; // { catName, it, qty, amt }
+  const rows = []; // { catName, label, detail, qty, u, unitP, amt }
 
   Object.entries(DATA).forEach(([catName, cat]) => {
     cat.items.forEach(it => {
       if (it.pct) return;
       const s = sel[it.id];
-      if (s.on && s.q > 0) {
-        const amt = it.p * s.q;
-        catMap[catName] = (catMap[catName] || 0) + amt;
+      if (!s?.on) return;
+
+      let amt = 0;
+      let unitP = it.p || 0;
+      let detail = it.d;
+      let qtyLabel = s.q;
+
+      if (it.type === 'floor-demo') {
+        // 마루 철거 세부 합산
+        FLOOR_DEMO_TYPES.forEach(ft => {
+          const fs = floorDemoSel[ft.id];
+          if (!fs.on) return;
+          const a = ft.p * fs.q;
+          amt += a;
+          rows.push({ catName, label: `마루 철거 — ${ft.n}`, detail:'', qty:fs.q, u:(ft.u||'평'), unitP:ft.p, amt:a });
+        });
+        if (amt > 0) catMap[catName] = (catMap[catName]||0) + amt;
         baseSub += amt;
-        selectedItems.push({ catName, it, qty: s.q, amt });
+        return;
       }
+
+      if (it.type === 'select-price') {
+        const opt = it.options[s.selectIdx];
+        if (!opt || opt.p === 0) return;
+        amt = opt.p;
+        detail = opt.label;
+        qtyLabel = 1;
+      } else if (it.type === 'input') {
+        amt = s.val || 0;
+        if (!amt) return;
+        unitP = amt;
+        qtyLabel = 1;
+      } else if (it.type === 'mat-option') {
+        amt = Math.round(calcYoungDoorBase() * 0.4);
+        if (!amt) return;
+        unitP = amt;
+        qtyLabel = 1;
+      } else {
+        amt = unitP * s.q;
+        qtyLabel = s.q;
+      }
+
+      if (!amt) return;
+      catMap[catName] = (catMap[catName]||0) + amt;
+      baseSub += amt;
+      rows.push({ catName, label: it.n, detail, qty: qtyLabel, u: it.u, unitP, amt });
     });
   });
 
+  // pct 항목
   let pctSub = 0;
   Object.entries(DATA).forEach(([catName, cat]) => {
     cat.items.forEach(it => {
       if (!it.pct) return;
       const s = sel[it.id];
-      if (s.on && s.q > 0) {
-        const amt = Math.round(baseSub * it.pct) * s.q;
-        catMap[catName] = (catMap[catName] || 0) + amt;
-        pctSub += amt;
-        selectedItems.push({ catName, it, qty: s.q, amt });
-      }
+      if (!s?.on) return;
+      const amt = Math.round(baseSub * it.pct);
+      catMap[catName] = (catMap[catName]||0) + amt;
+      pctSub += amt;
+      rows.push({ catName, label: it.n, detail:`합계 ${fmt(baseSub)}원의 ${(it.pct*100).toFixed(0)}%`, qty:1, u:'식', unitP:amt, amt });
     });
   });
 
   const sub   = baseSub + pctSub;
   const vat   = Math.round(sub * 0.1);
   const total = sub + vat;
-  return { sub, vat, total, catMap, selectedItems, baseSub };
+  return { sub, vat, total, catMap, rows };
 }
 
+/* ════════ 요약 렌더 ════════ */
 function calc() {
   const py = getPyung();
-  document.getElementById('sqm').textContent = `(약 ${Math.round(py * 3.3)}㎡)`;
+  document.getElementById('sqm').textContent = `(약 ${Math.round(py*3.3)}㎡)`;
+  const { sub, vat, total, catMap, rows } = calcTotals();
+  const perPy = py > 0 ? Math.round(sub/py) : 0;
 
-  const { sub, vat, total, catMap, selectedItems } = calcTotals();
-  const perPy = py > 0 ? Math.round(sub / py) : 0;
-
-  /* 요약 카드 */
   document.getElementById('scards').innerHTML = `
     <div class="scard"><div class="slabel">소계 (VAT 제외)</div><div class="sval">${fmt(sub)}원</div></div>
     <div class="scard"><div class="slabel">부가세 10%</div><div class="sval">${fmt(vat)}원</div></div>
     <div class="scard"><div class="slabel">합계 (VAT 포함)</div><div class="sval hi">${fmt(total)}원</div></div>
-    <div class="scard"><div class="slabel">평당 단가</div><div class="sval">${py > 0 ? fmt(perPy) + '원' : '-'}</div></div>
-  `;
+    <div class="scard"><div class="slabel">평당 단가</div><div class="sval">${py>0?fmt(perPy)+'원':'-'}</div></div>`;
 
-  /* 카테고리 내역 */
-  const entries = Object.entries(catMap).filter(([, v]) => v > 0);
-  const rowsEl = document.getElementById('srows');
-  if (!entries.length) {
-    rowsEl.innerHTML = '<p class="empty">항목을 선택하면 견적이 표시됩니다.</p>';
-  } else {
-    rowsEl.innerHTML =
-      entries.map(([k, v]) =>
-        `<div class="srow"><span class="lbl">${k}</span><span class="val">${fmt(v)}원</span></div>`
-      ).join('') +
-      `<div class="srow tot"><span class="lbl">합계</span><span class="val">${fmt(sub)}원</span></div>`;
-  }
+  const entries = Object.entries(catMap).filter(([,v])=>v>0);
+  document.getElementById('srows').innerHTML = !entries.length
+    ? '<p class="empty">항목을 선택하면 견적이 표시됩니다.</p>'
+    : entries.map(([k,v]) => `<div class="srow"><span class="lbl">${k}</span><span class="val">${fmt(v)}원</span></div>`).join('')
+      + `<div class="srow tot"><span class="lbl">합계</span><span class="val">${fmt(sub)}원</span></div>`;
 
-  /* 견적서 문서 렌더링 */
-  renderQuoteDoc({ sub, vat, total, selectedItems });
+  renderQuoteDoc({ sub, vat, total, catMap, rows });
 }
 
-/* ── 견적서 문서 렌더링 ── */
+/* ════════ 견적서 렌더 ════════ */
 function renderQuoteDoc(totals) {
-  // totals 없으면 재계산
-  if (!totals || !totals.selectedItems) {
-    totals = calcTotals();
-  }
-  const { sub, vat, total, selectedItems } = totals;
+  if (!totals) totals = calcTotals();
+  const { sub, vat, total, catMap, rows } = totals;
 
-  /* 고객 정보 */
   const clientDate   = document.getElementById('clientDate').value || '';
   const clientName   = document.getElementById('clientName').value || '';
   const clientPhone  = document.getElementById('clientPhone').value || '';
@@ -233,138 +319,158 @@ function renderQuoteDoc(totals) {
   const clientPeriod = document.getElementById('clientPeriod').value || '';
   const clientNote   = document.getElementById('clientNote').value || '';
 
-  document.getElementById('qi-date').textContent   = clientDate.replace(/-/g, '년 ').replace(/-/, '월 ') + '일';
+  const dateStr = clientDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1년 $2월 $3일');
+  document.getElementById('qi-date').textContent   = dateStr;
   document.getElementById('qi-client').textContent = `${clientName} / ${clientPhone}`;
   document.getElementById('qi-addr').textContent   = clientAddr;
   document.getElementById('qi-period').textContent = clientPeriod;
   document.getElementById('qi-note').textContent   = clientNote;
 
-  /* 항목 테이블 — 카테고리별 그룹핑 */
+  // 그룹핑
   const grouped = {};
-  selectedItems.forEach(row => {
-    if (!grouped[row.catName]) grouped[row.catName] = [];
-    grouped[row.catName].push(row);
+  rows.forEach(r => {
+    if (!grouped[r.catName]) grouped[r.catName] = [];
+    grouped[r.catName].push(r);
   });
 
-  let bodyHtml = '';
-  Object.entries(grouped).forEach(([catName, rows]) => {
-    // 카테고리 헤더 행
-    const catTotal = rows.reduce((s, r) => s + r.amt, 0);
-    bodyHtml += `<tr class="qrow-cat">
-      <td>${catName}</td>
-      <td colspan="4"></td>
-      <td class="q-amount">${fmt(catTotal)}</td>
-    </tr>`;
-    // 세부 항목
-    rows.forEach(({ it, qty, amt }) => {
-      const unitPrice = it.pct ? `공사금 ${(it.pct*100).toFixed(0)}%` : fmt(it.p);
-      bodyHtml += `<tr>
+  // ── 상세 견적서 tbody ──
+  let detailHtml = '';
+  Object.entries(grouped).forEach(([cat, list]) => {
+    const catTotal = list.reduce((s,r)=>s+r.amt,0);
+    detailHtml += `<tr class="qrow-cat">
+      <td>${cat}</td><td colspan="4"></td>
+      <td class="q-amount">${fmt(catTotal)}</td></tr>`;
+    list.forEach(r => {
+      const up = r.unitP ? fmt(r.unitP) : '-';
+      detailHtml += `<tr>
         <td></td>
-        <td class="q-name">${it.n}<br><span style="font-size:9px;color:#888">${it.d}</span></td>
-        <td class="q-center">${it.u}</td>
-        <td class="q-center">${qty}</td>
-        <td class="q-price">${unitPrice}</td>
-        <td class="q-amount">${fmt(amt)}</td>
-      </tr>`;
+        <td class="q-name">${r.label}${r.detail?`<br><span class="q-detail">${r.detail}</span>`:''}</td>
+        <td class="q-center">${r.u}</td>
+        <td class="q-center">${r.qty}</td>
+        <td class="q-price">${up}</td>
+        <td class="q-amount">${fmt(r.amt)}</td></tr>`;
     });
   });
+  if (!detailHtml) detailHtml = `<tr><td colspan="6" class="empty">선택된 항목이 없습니다.</td></tr>`;
 
-  if (!bodyHtml) {
-    bodyHtml = `<tr><td colspan="6" style="text-align:center;padding:20px;color:#aaa">선택된 항목이 없습니다.</td></tr>`;
-  }
+  // ── 간략 견적서 tbody ──
+  let simpleHtml = '';
+  Object.entries(grouped).forEach(([cat, list]) => {
+    const catTotal = list.reduce((s,r)=>s+r.amt,0);
+    simpleHtml += `<tr>
+      <td class="q-name" style="font-weight:600">${cat}</td>
+      <td colspan="4"></td>
+      <td class="q-amount">${fmt(catTotal)}</td></tr>`;
+  });
+  if (!simpleHtml) simpleHtml = `<tr><td colspan="6" class="empty">선택된 항목이 없습니다.</td></tr>`;
 
-  document.getElementById('qitem-body').innerHTML = bodyHtml;
-  document.getElementById('qf-sub').textContent   = fmtWon(sub);
-  document.getElementById('qf-vat').textContent   = fmtWon(vat);
-  document.getElementById('qf-total').textContent = fmtWon(total);
+  document.getElementById('qitem-body-detail').innerHTML = detailHtml;
+  document.getElementById('qitem-body-simple').innerHTML = simpleHtml;
 
-  /* 계약 조건 */
-  document.getElementById('qc-deposit').textContent = fmtWon(Math.round(total * 0.2));
-  document.getElementById('qc-mid').textContent     = fmtWon(Math.round(total * 0.3));
-  document.getElementById('qc-final').textContent   = fmtWon(Math.round(total * 0.5));
+  ['qf-sub-d','qf-sub-s'].forEach(id => document.getElementById(id).textContent = fmtW(sub));
+  ['qf-vat-d','qf-vat-s'].forEach(id => document.getElementById(id).textContent = fmtW(vat));
+  ['qf-total-d','qf-total-s'].forEach(id => document.getElementById(id).textContent = fmtW(total));
+
+  ['qc-deposit-d','qc-deposit-s'].forEach(id => document.getElementById(id).textContent = fmtW(Math.round(total*0.2)));
+  ['qc-mid-d','qc-mid-s'].forEach(id => document.getElementById(id).textContent = fmtW(Math.round(total*0.3)));
+  ['qc-final-d','qc-final-s'].forEach(id => document.getElementById(id).textContent = fmtW(Math.round(total*0.5)));
 }
 
-/* ── 엑셀 다운로드 ── */
-function downloadExcel() {
-  const { sub, vat, total, selectedItems } = calcTotals();
+/* ════════ 인쇄 모드 ════════ */
+let printMode = 'detail';
+function setPrintMode(m) {
+  printMode = m;
+  document.getElementById('quote-detail').classList.toggle('print-hidden', m !== 'detail');
+  document.getElementById('quote-simple').classList.toggle('print-hidden', m !== 'simple');
+}
 
-  const clientDate   = document.getElementById('clientDate').value || '';
-  const clientName   = document.getElementById('clientName').value || '고객';
-  const clientPhone  = document.getElementById('clientPhone').value || '';
-  const clientAddr   = document.getElementById('clientAddr').value || '';
-  const clientPeriod = document.getElementById('clientPeriod').value || '';
-  const clientNote   = document.getElementById('clientNote').value || '';
+/* ════════ 엑셀 다운로드 ════════ */
+function downloadExcel() {
+  const { sub, vat, total, rows } = calcTotals();
+  const clientDate  = document.getElementById('clientDate').value || today();
+  const clientName  = document.getElementById('clientName').value || '고객';
+  const clientPhone = document.getElementById('clientPhone').value || '';
+  const clientAddr  = document.getElementById('clientAddr').value || '';
+  const clientPeriod= document.getElementById('clientPeriod').value || '';
+  const clientNote  = document.getElementById('clientNote').value || '';
 
   const wb = XLSX.utils.book_new();
-  const ws_data = [];
 
-  /* ─ 헤더 ─ */
-  ws_data.push(['라인 인테리어', '', '', '', '', '견 적 서']);
-  ws_data.push([]);
-  ws_data.push(['의뢰일',   clientDate,  '', '상호',     '라인 인테리어', '']);
-  ws_data.push(['고객명/연락처', `${clientName} / ${clientPhone}`, '', '등록번호', '296-24-02323', '']);
-  ws_data.push(['주소/평형', clientAddr,  '', '담당자',   '라인 인테리어', '']);
-  ws_data.push(['시공예상기간', clientPeriod, '', '연락처', '010-6420-3155', '']);
-  ws_data.push(['특이사항', clientNote,  '', '', '', '']);
-  ws_data.push([]);
+  // ── 시트1: 상세 견적서 ──
+  const d = [];
+  d.push(['라인 인테리어','','','','','견 적 서']);
+  d.push([]);
+  d.push(['의뢰일', clientDate, '', '상호', '라인 인테리어', '']);
+  d.push(['고객명/연락처', `${clientName} / ${clientPhone}`, '', '등록번호', '296-24-02323', '']);
+  d.push(['주소/평형', clientAddr, '', '담당자', '라인 인테리어', '']);
+  d.push(['시공예상기간', clientPeriod, '', '연락처', '010-6420-3155', '']);
+  d.push(['특이사항', clientNote, '', '', '', '']);
+  d.push([]);
+  d.push(['품명','내용','단위','수량','단가','견적가']);
 
-  /* ─ 컬럼 헤더 ─ */
-  ws_data.push(['품명', '내용', '단위', '수량', '단가', '견적가']);
-
-  /* ─ 항목 (카테고리 그룹) ─ */
   const grouped = {};
-  selectedItems.forEach(row => {
-    if (!grouped[row.catName]) grouped[row.catName] = [];
-    grouped[row.catName].push(row);
+  rows.forEach(r => { if (!grouped[r.catName]) grouped[r.catName]=[]; grouped[r.catName].push(r); });
+
+  Object.entries(grouped).forEach(([cat, list]) => {
+    const catTotal = list.reduce((s,r)=>s+r.amt,0);
+    d.push([cat,'','','','',catTotal]);
+    list.forEach(r => d.push(['', `${r.label}${r.detail?' ('+r.detail+')':''}`, r.u, r.qty, r.unitP||'', r.amt]));
   });
+  d.push([]);
+  d.push(['소계 (부가세 제외)','','','','',sub]);
+  d.push(['부가세 (10%)','','','','',vat]);
+  d.push(['총 공사 금액','','','','',total]);
+  d.push([]);
+  d.push(['계약금 (20%)', Math.round(total*0.2), '', '1차 중도금 (30%)', Math.round(total*0.3), '잔금 (50%)']);
+  d.push(['', '', '', '', '', Math.round(total*0.5)]);
+  d.push([]);
+  d.push(['* 부가세 별도 견적입니다.']);
+  d.push(['* 본 업체는 전문 기공 인력만 시공합니다.']);
 
-  Object.entries(grouped).forEach(([catName, rows]) => {
-    const catTotal = rows.reduce((s, r) => s + r.amt, 0);
-    ws_data.push([catName, '', '', '', '', catTotal]);
-    rows.forEach(({ it, qty, amt }) => {
-      const unitPrice = it.pct ? `공사금 ${(it.pct*100).toFixed(0)}%` : it.p;
-      ws_data.push(['', `${it.n} (${it.d})`, it.u, qty, unitPrice, amt]);
-    });
+  const ws1 = XLSX.utils.aoa_to_sheet(d);
+  ws1['!cols'] = [{wch:14},{wch:38},{wch:8},{wch:8},{wch:14},{wch:14}];
+  applyNumFmt(ws1, d);
+  XLSX.utils.book_append_sheet(wb, ws1, '상세견적서');
+
+  // ── 시트2: 간략 견적서 ──
+  const s2 = [];
+  s2.push(['라인 인테리어','','','','','견 적 서 (요약)']);
+  s2.push([]);
+  s2.push(['의뢰일', clientDate, '', '상호', '라인 인테리어','']);
+  s2.push(['고객명/연락처', `${clientName} / ${clientPhone}`, '', '등록번호', '296-24-02323','']);
+  s2.push(['주소/평형', clientAddr, '', '담당자', '라인 인테리어','']);
+  s2.push([]);
+  s2.push(['항목','','','','','금액']);
+  Object.entries(grouped).forEach(([cat, list]) => {
+    const catTotal = list.reduce((s,r)=>s+r.amt,0);
+    s2.push([cat,'','','','',catTotal]);
   });
+  s2.push([]);
+  s2.push(['소계','','','','',sub]);
+  s2.push(['부가세','','','','',vat]);
+  s2.push(['총 공사 금액','','','','',total]);
 
-  ws_data.push([]);
-  ws_data.push(['소계 (부가세 제외)', '', '', '', '', sub]);
-  ws_data.push(['부가세 (10%)',       '', '', '', '', vat]);
-  ws_data.push(['총 공사 금액',       '', '', '', '', total]);
-  ws_data.push([]);
-  ws_data.push(['계약금 (20%)', Math.round(total * 0.2), '', '1차 중도금 (30%)', Math.round(total * 0.3), '']);
-  ws_data.push(['잔금 (50%)',   Math.round(total * 0.5), '', '', '', '']);
-  ws_data.push([]);
-  ws_data.push(['* 부가세 별도 견적입니다. (계약금 30%, 시공후 잔금 70% 입금 기준)']);
-  ws_data.push(['* 본 업체는 전문 기공 인력만 시공합니다. (연습생, 외국인 인력 제한)']);
+  const ws2 = XLSX.utils.aoa_to_sheet(s2);
+  ws2['!cols'] = [{wch:20},{wch:20},{wch:8},{wch:8},{wch:14},{wch:14}];
+  applyNumFmt(ws2, s2);
+  XLSX.utils.book_append_sheet(wb, ws2, '요약견적서');
 
-  const ws = XLSX.utils.aoa_to_sheet(ws_data);
-
-  /* 열 너비 설정 */
-  ws['!cols'] = [
-    { wch: 14 }, { wch: 40 }, { wch: 8 },
-    { wch: 8  }, { wch: 14 }, { wch: 14 }
-  ];
-
-  /* 숫자 셀 서식 */
-  const numFmt = '#,##0';
-  ws_data.forEach((row, ri) => {
-    row.forEach((cell, ci) => {
-      if (typeof cell === 'number') {
-        const cellRef = XLSX.utils.encode_cell({ r: ri, c: ci });
-        if (ws[cellRef]) ws[cellRef].z = numFmt;
-      }
-    });
-  });
-
-  XLSX.utils.book_append_sheet(wb, ws, '견적서');
-
-  const filename = `라인인테리어_견적서_${clientName}_${clientDate || new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
+  const fname = `라인인테리어_견적서_${clientName}_${clientDate}.xlsx`;
+  XLSX.writeFile(wb, fname);
 }
 
-/* ── 초기화 ── */
+function applyNumFmt(ws, data) {
+  data.forEach((row, ri) => row.forEach((cell, ci) => {
+    if (typeof cell === 'number') {
+      const ref = XLSX.utils.encode_cell({r:ri, c:ci});
+      if (ws[ref]) ws[ref].z = '#,##0';
+    }
+  }));
+}
+
+/* ════════ 초기화 ════════ */
 function resetAll() {
-  Object.keys(sel).forEach(id => { sel[id] = { on: false, q: 0 }; });
+  Object.keys(sel).forEach(id => { sel[id] = { on:false, q:1, val:0, selectIdx:0 }; });
+  Object.keys(floorDemoSel).forEach(id => { floorDemoSel[id] = { on:false, q:1 }; });
   renderItems(); calc();
 }
