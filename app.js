@@ -199,9 +199,9 @@ function renderMatOption(it, isOn) {
 
 /* 욕실 수 + 타입 + 옵션 통합 렌더 */
 const BATH_TYPES = [
-  { key:'std',  label:'스탠다드형', p:3000000, color:'#4a7c59' },
-  { key:'high', label:'고급형',     p:4500000, color:'#185fa5' },
-  { key:'prem', label:'프리미엄형', p:5500000, color:'#7b3fa0' },
+  { key:'std',  label:'베이직형',   p:2900000, color:'#4a7c59' },
+  { key:'high', label:'스탠다드형', p:4300000, color:'#185fa5' },
+  { key:'prem', label:'프리미엄형', p:5200000, color:'#7b3fa0' },
 ];
 
 const BATH_OPTS = [
@@ -222,7 +222,7 @@ const BATH_FAN_OPTS = [
 ];
 
 function calcBathRoomAmt(r) {
-  const BPRICES = { std:3000000, high:4500000, prem:5500000 };
+  const BPRICES = { std:2900000, high:4300000, prem:5200000 };
   let a = BPRICES[r.type] || 0;
   BATH_OPTS.forEach(o => { if (r.opts[o.key]) a += o.p; });
   a += (BATH_FAN_OPTS[r.opts.fan] || {p:0}).p;
@@ -263,7 +263,7 @@ function renderBathRooms(it) {
     roomCards += `
       <div class="bath-room-card">
         <div class="bath-room-header">
-          <span class="bath-room-label">${i+1}번째 욕실</span>
+          <span class="bath-room-label">${i===0?'1번째 욕실 (거실)':i===1?'2번째 욕실 (안방)':(i+1)+'번째 욕실'}</span>
           <span class="bath-room-amt">${fmtW(roomAmt)}</span>
         </div>
         <div class="bath-type-btns">${typeBtns}</div>
@@ -638,7 +638,7 @@ function calcTotals() {
       if (it.pct) return;
       const s = sel[it.id];
 
-      // cat-extra는 s.on 체크 없이 항상 계산 (항상 표시되는 항목)
+      // cat-extra / bath-rooms / bath-water 는 s.on 체크 없이 항상 계산
       if (it.type === 'cat-extra') {
         const st = catExtraState[it.id];
         if (!st) return;
@@ -655,6 +655,39 @@ function calcTotals() {
           baseSub -= extraNego;
           rows.push({ catName, label: `네고 (${st.negoText||'할인'})`, detail:'차감', qty:1, u:'식', unitP:-extraNego, amt:-extraNego });
         }
+        return;
+      }
+
+      if (it.type === 'bath-rooms') {
+        // 욕실별 타입 + 옵션 계산 (s.on 체크 불필요 — bathRooms 배열로 관리)
+        const BLABELS = { std:'베이직형', high:'스탠다드형', prem:'프리미엄형' };
+        bathRooms.forEach((r, i) => {
+          const a = calcBathRoomAmt(r);
+          if (!a) return;
+          const BPRICES_B = { std:2900000, high:4300000, prem:5200000 };
+          const baseA = BPRICES_B[r.type] || 0;
+          rows.push({ catName, label: `욕실 ${i+1} — ${BLABELS[r.type]}`, detail:'기본', qty:1, u:'실', unitP:baseA, amt:baseA });
+          BATH_OPTS.forEach(o => {
+            if (r.opts[o.key]) rows.push({ catName, label: `욕실 ${i+1} — ${o.label}`, detail:'', qty:1, u:'개', unitP:o.p, amt:o.p });
+          });
+          const fan = BATH_FAN_OPTS[r.opts.fan];
+          if (fan && fan.p > 0) rows.push({ catName, label: `욕실 ${i+1} — ${fan.label}`, detail:'환풍기', qty:1, u:'개', unitP:fan.p, amt:fan.p });
+          amt += a;
+        });
+        if (amt > 0) { catMap[catName] = (catMap[catName]||0) + amt; baseSub += amt; }
+        return;
+      }
+
+      if (it.type === 'bath-water') {
+        // 화장실 방수 계산 (s.on 체크 불필요 — bathWaterList 배열로 관리)
+        bathWaterList.forEach((r, i) => {
+          const t = BATH_WATER_TYPES.find(t=>t.key===r.type);
+          if (!t) return;
+          catMap[catName] = (catMap[catName]||0) + t.p;
+          baseSub += t.p;
+          rows.push({ catName, label:`화장실 방수 ${i+1}개소 — ${t.label}`, detail:t.desc, qty:1, u:'개소', unitP:t.p, amt:t.p });
+          amt += t.p;
+        });
         return;
       }
 
@@ -691,28 +724,6 @@ function calcTotals() {
         return;
       }
 
-      if (it.type === 'bath-rooms') {
-        // 욕실별 타입 + 옵션 계산
-        const BLABELS = { std:'스탠다드형', high:'고급형', prem:'프리미엄형' };
-        bathRooms.forEach((r, i) => {
-          const a = calcBathRoomAmt(r);
-          if (!a) return;
-          // 타입 기본 금액
-          const BPRICES = { std:3000000, high:4500000, prem:5500000 };
-          const baseA = BPRICES[r.type] || 0;
-          rows.push({ catName, label: `욕실 ${i+1} — ${BLABELS[r.type]}`, detail:'기본', qty:1, u:'실', unitP:baseA, amt:baseA });
-          // 선택된 옵션들
-          BATH_OPTS.forEach(o => {
-            if (r.opts[o.key]) rows.push({ catName, label: `욕실 ${i+1} — ${o.label}`, detail:'', qty:1, u:'개', unitP:o.p, amt:o.p });
-          });
-          const fan = BATH_FAN_OPTS[r.opts.fan];
-          if (fan && fan.p > 0) rows.push({ catName, label: `욕실 ${i+1} — ${fan.label}`, detail:'환풍기', qty:1, u:'개', unitP:fan.p, amt:fan.p });
-          amt += a;
-        });
-        if (amt > 0) catMap[catName] = (catMap[catName]||0) + amt;
-        baseSub += amt;
-        return;
-      }
 
       if (it.type === 'floor-demo') {
         // 마루 철거 세부 합산
