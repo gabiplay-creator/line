@@ -342,7 +342,7 @@ function renderCatExtra(it) {
             <div class="cat-extra-amt-row">
               <span class="cat-extra-sign">+</span>
               <input class="cat-extra-num" type="number" min="0" placeholder="금액 입력"
-                value="${st.amt||''}"
+                value="${st.amt > 0 ? st.amt : ''}"
                 oninput="event.stopPropagation();setCatExtraAmt('${it.id}',this.value)">
               <span class="iunit">원</span>
             </div>
@@ -357,7 +357,7 @@ function renderCatExtra(it) {
             <div class="cat-extra-amt-row">
               <span class="cat-extra-sign" style="color:#e05c5c">−</span>
               <input class="cat-extra-num nego" type="number" min="0" placeholder="할인 금액"
-                value="${st.nego||''}"
+                value="${st.nego > 0 ? st.nego : ''}"
                 oninput="event.stopPropagation();setCatExtraNego('${it.id}',this.value)">
               <span class="iunit">원</span>
             </div>
@@ -368,10 +368,28 @@ function renderCatExtra(it) {
     </div>`;
 }
 
-function setCatExtraText(id, v)      { if(!catExtraState[id]) catExtraState[id]={text:'',amt:0,nego:0}; catExtraState[id].text=v; }
-function setCatExtraNegoText(id, v)  { if(!catExtraState[id]) catExtraState[id]={text:'',amt:0,nego:0}; catExtraState[id].negoText=v; }
-function setCatExtraAmt(id, v)       { if(!catExtraState[id]) catExtraState[id]={text:'',amt:0,nego:0}; catExtraState[id].amt=Math.max(0,parseFloat(v)||0); calc(); }
-function setCatExtraNego(id, v)      { if(!catExtraState[id]) catExtraState[id]={text:'',amt:0,nego:0}; catExtraState[id].nego=Math.max(0,parseFloat(v)||0); calc(); }
+function setCatExtraText(id, v) {
+  if (!catExtraState[id]) catExtraState[id] = { text:'', amt:0, nego:0 };
+  catExtraState[id].text = v;
+  calc(); // 텍스트 변경도 견적서에 반영
+}
+function setCatExtraNegoText(id, v) {
+  if (!catExtraState[id]) catExtraState[id] = { text:'', amt:0, nego:0 };
+  catExtraState[id].negoText = v;
+}
+function setCatExtraAmt(id, v) {
+  if (!catExtraState[id]) catExtraState[id] = { text:'', amt:0, nego:0 };
+  const parsed = parseFloat(v);
+  // 빈 문자열이나 0이면 완전히 0으로 초기화 (삭제 가능)
+  catExtraState[id].amt = (!v || v === '' || isNaN(parsed)) ? 0 : Math.max(0, parsed);
+  calc();
+}
+function setCatExtraNego(id, v) {
+  if (!catExtraState[id]) catExtraState[id] = { text:'', amt:0, nego:0 };
+  const parsed = parseFloat(v);
+  catExtraState[id].nego = (!v || v === '' || isNaN(parsed)) ? 0 : Math.max(0, parsed);
+  calc();
+}
 
 /* ════════ 화장실 방수 렌더 ════════ */
 const BATH_WATER_TYPES = [
@@ -619,6 +637,27 @@ function calcTotals() {
     cat.items.forEach(it => {
       if (it.pct) return;
       const s = sel[it.id];
+
+      // cat-extra는 s.on 체크 없이 항상 계산 (항상 표시되는 항목)
+      if (it.type === 'cat-extra') {
+        const st = catExtraState[it.id];
+        if (!st) return;
+        const extraAmt = st.amt || 0;
+        const extraNego = st.nego || 0;
+        if (!extraAmt && !extraNego) return;
+        if (extraAmt > 0) {
+          catMap[catName] = (catMap[catName]||0) + extraAmt;
+          baseSub += extraAmt;
+          rows.push({ catName, label: st.text || '기타', detail:'직접 입력', qty:1, u:'식', unitP:extraAmt, amt:extraAmt });
+        }
+        if (extraNego > 0) {
+          catMap[catName] = (catMap[catName]||0) - extraNego;
+          baseSub -= extraNego;
+          rows.push({ catName, label: `네고 (${st.negoText||'할인'})`, detail:'차감', qty:1, u:'식', unitP:-extraNego, amt:-extraNego });
+        }
+        return;
+      }
+
       if (!s?.on) return;
 
       let amt = 0;
@@ -700,24 +739,6 @@ function calcTotals() {
         if (!amt) return;
         unitP = amt;
         qtyLabel = 1;
-      } else if (it.type === 'cat-extra') {
-        const st = catExtraState[it.id];
-        if (!st) return;
-        const extraAmt = st.amt || 0;
-        const extraNego = st.nego || 0;
-        const net = extraAmt - extraNego;
-        if (!extraAmt && !extraNego) return;
-        if (extraAmt > 0) {
-          catMap[catName] = (catMap[catName]||0) + extraAmt;
-          baseSub += extraAmt;
-          rows.push({ catName, label: st.text || '기타', detail:'직접 입력', qty:1, u:'식', unitP:extraAmt, amt:extraAmt });
-        }
-        if (extraNego > 0) {
-          catMap[catName] = (catMap[catName]||0) - extraNego;
-          baseSub -= extraNego;
-          rows.push({ catName, label: `네고 (${st.negoText||'할인'})`, detail:'차감', qty:1, u:'식', unitP:-extraNego, amt:-extraNego });
-        }
-        return;
       } else if (it.type === 'mat-option') {
         amt = Math.round(calcYoungDoorBase() * 0.4);
         if (!amt) return;
