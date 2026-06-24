@@ -8,6 +8,8 @@ const floorDemoSel = {}; // { fd_id: { on, q } }
 // 욕실별 타입 상태: [ {type: 'std'|'high'|'prem'}, ... ]
 let bathRooms = []; // 길이 = 욕실 수
 let negoAmt = 0;    // 네고(할인) 금액 — 항상 양수로 저장, 총액에서 차감
+// 화장실 방수: [ { type: '1st'|'2nd', count: 1 }, ... ] — 개소별
+let bathWaterList = [];
 
 function initSel() {
   Object.values(DATA).forEach(cat =>
@@ -83,6 +85,7 @@ function renderItem(it) {
   if (it.type === 'auto-labor') return renderAutoLabor(it, isOn);
   if (it.type === 'auto-waste') return renderAutoWaste(it, isOn);
   if (it.type === 'nego') return renderNego(it);
+  if (it.type === 'bath-water') return renderBathWater(it);
 
   let priceLabel = '';
   if (it.pct) priceLabel = `공사금 ${(it.pct*100).toFixed(0)}% 자동`;
@@ -307,6 +310,68 @@ function toggleBathOpt(idx, key) {
 }
 function setBathFan(idx, val) {
   if (bathRooms[idx]) { bathRooms[idx].opts.fan = parseInt(val)||0; calc(); }
+}
+
+/* ════════ 화장실 방수 렌더 ════════ */
+const BATH_WATER_TYPES = [
+  { key:'1st', label:'1차 방수',   p:200000, desc:'1차 방수 처리' },
+  { key:'2nd', label:'2~3차 방수', p:200000, desc:'2차 또는 3차 방수 처리' },
+];
+
+function renderBathWater(it) {
+  const count = bathWaterList.length;
+  const total = bathWaterList.reduce((s,r) => s + (BATH_WATER_TYPES.find(t=>t.key===r.type)?.p || 0), 0);
+
+  let cards = '';
+  for (let i = 0; i < count; i++) {
+    const r = bathWaterList[i];
+    cards += `
+      <div class="bath-water-card">
+        <div class="bath-room-header">
+          <span class="bath-room-label">${i+1}번째 개소</span>
+          <span class="bath-room-amt">${fmtW(BATH_WATER_TYPES.find(t=>t.key===r.type)?.p||0)}</span>
+        </div>
+        <div class="bath-type-btns">
+          ${BATH_WATER_TYPES.map(t => `
+            <button class="bath-type-btn${r.type===t.key?' active':''}"
+              style="${r.type===t.key?'background:#185fa5;color:#fff;border-color:#185fa5':''}"
+              onclick="event.stopPropagation();setBathWaterType(${i},'${t.key}')">
+              ${t.label}<br><span class="bath-type-price">${fmt(t.p)}원</span>
+            </button>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="item item-wide bath-rooms-item" onclick="event.stopPropagation()">
+      <div class="iinfo" style="flex:1">
+        <div class="bath-header">
+          <div>
+            <div class="iname">화장실 방수</div>
+            <div class="idesc">개소 수 선택 후 각각 차수를 지정하세요 · 개소당 200,000원</div>
+          </div>
+          <div class="bath-counter">
+            <button class="qbtn" onclick="adjBathWater(-1)">−</button>
+            <span class="bath-count-num">${count}</span>
+            <button class="qbtn" onclick="adjBathWater(1)">+</button>
+            <span class="iunit">개소</span>
+            ${count > 0 ? `<span class="bath-total-badge">${fmtW(total)}</span>` : ''}
+          </div>
+        </div>
+        ${count > 0 ? `<div class="bath-rooms-grid">${cards}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function adjBathWater(d) {
+  const newCount = Math.max(0, bathWaterList.length + d);
+  while (bathWaterList.length < newCount) bathWaterList.push({ type: '1st' });
+  while (bathWaterList.length > newCount) bathWaterList.pop();
+  renderItems(); calc();
+}
+
+function setBathWaterType(idx, type) {
+  if (bathWaterList[idx]) { bathWaterList[idx].type = type; renderItems(); calc(); }
 }
 
 /* ════════ 네고 / 할인 렌더 ════════ */
@@ -589,6 +654,18 @@ function calcTotals() {
     });
   });
 
+  // ── 화장실 방수 계산 ──
+  if (bathWaterList.length > 0) {
+    bathWaterList.forEach((r, i) => {
+      const t = BATH_WATER_TYPES.find(t=>t.key===r.type);
+      if (!t) return;
+      const a = t.p;
+      catMap['설비'] = (catMap['설비']||0) + a;
+      baseSub += a;
+      rows.push({ catName:'설비', label:`화장실 방수 ${i+1}개소 — ${t.label}`, detail:t.desc, qty:1, u:'개소', unitP:a, amt:a });
+    });
+  }
+
   // ── 우수관 방수 + 교체 동시 선택 시 세트 500,000원 네고 처리 ──
   const drain1 = sel['plm_drain1'];
   const drain2 = sel['plm_drain2'];
@@ -825,6 +902,7 @@ function resetAll() {
   Object.keys(floorDemoSel).forEach(id => { floorDemoSel[id] = { on:false, q:1 }; });
   bathRooms = [];
   negoAmt = 0;
+  bathWaterList = [];
   document.getElementById('nego-input') && (document.getElementById('nego-input').value = '');
   renderItems(); calc();
 }

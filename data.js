@@ -20,10 +20,7 @@ const DATA = {
       id:"dem_labor", n:"인건비", d:"평수에 따라 품 수 자동 계산 (품당 250,000원)",
       type:"auto-labor", special:true
     },
-    {
-      id:"dem_waterproof", n:"방수", d:"1~3 선택, 1개소당 200,000원",
-      type:"stepper", u:"개소", p:200000, min:1, max:3
-    },
+
     {
       id:"dem_floor_type", n:"마루 철거", d:"종류 선택 후 평수 입력",
       type:"floor-demo", special:true
@@ -40,6 +37,10 @@ const DATA = {
      2. 설비
   ════════════════════════════════ */
   "설비": { items: [
+    {
+      id:"plm_bath_water", n:"화장실 방수", d:"차수 선택 — 개소당 가격",
+      type:"bath-water", special:true
+    },
     { id:"plm_sink",   n:"싱크대 수도",     d:"싱크대 수도 내림/올림",           type:"simple", u:"식", p:150000 },
     { id:"plm_bath",   n:"욕실 배관",       d:"욕실 배관 개당 350,000원",        type:"stepper",u:"개", p:350000 },
     { id:"plm_drain1", n:"우수관 방수",     d:"개당 250,000원 (교체와 동시 선택 시 세트 500,000원)", type:"stepper",u:"개", p:250000 },
