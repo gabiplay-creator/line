@@ -42,8 +42,8 @@ const DATA = {
   "설비": { items: [
     { id:"plm_sink",   n:"싱크대 수도",     d:"싱크대 수도 내림/올림",           type:"simple", u:"식", p:150000 },
     { id:"plm_bath",   n:"욕실 배관",       d:"욕실 배관 개당 350,000원",        type:"stepper",u:"개", p:350000 },
-    { id:"plm_drain1", n:"우수관 방수",     d:"개당 350,000원",                   type:"stepper",u:"개", p:350000 },
-    { id:"plm_drain2", n:"우수관 교체",     d:"개당 750,000원",                   type:"stepper",u:"개", p:750000 },
+    { id:"plm_drain1", n:"우수관 방수",     d:"개당 250,000원 (교체와 동시 선택 시 세트 500,000원)", type:"stepper",u:"개", p:250000 },
+    { id:"plm_drain2", n:"우수관 교체",     d:"개당 350,000원 (방수와 동시 선택 시 세트 500,000원)", type:"stepper",u:"개", p:350000 },
     { id:"plm_living", n:"거실 확장 (단열포함)", d:"2,500,000원",                type:"simple", u:"식", p:2500000 },
     { id:"plm_room",   n:"방 확장 (단열포함)",   d:"2,000,000원",                type:"simple", u:"식", p:2000000 },
     { id:"plm_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },

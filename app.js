@@ -7,6 +7,7 @@ const sel = {};   // { id: { on, q, val } }
 const floorDemoSel = {}; // { fd_id: { on, q } }
 // 욕실별 타입 상태: [ {type: 'std'|'high'|'prem'}, ... ]
 let bathRooms = []; // 길이 = 욕실 수
+let negoAmt = 0;    // 네고(할인) 금액 — 항상 양수로 저장, 총액에서 차감
 
 function initSel() {
   Object.values(DATA).forEach(cat =>
@@ -81,6 +82,7 @@ function renderItem(it) {
   if (it.type === 'bath-rooms') return renderBathRooms(it);
   if (it.type === 'auto-labor') return renderAutoLabor(it, isOn);
   if (it.type === 'auto-waste') return renderAutoWaste(it, isOn);
+  if (it.type === 'nego') return renderNego(it);
 
   let priceLabel = '';
   if (it.pct) priceLabel = `공사금 ${(it.pct*100).toFixed(0)}% 자동`;
@@ -119,11 +121,14 @@ function renderItem(it) {
   }
 
   const pytag = it.pyAuto ? `<span class="pytag">평수연동</span>` : '';
+  // 우수관 방수+교체 동시 선택 시 세트 배지
+  const drainBoth = (it.id==='plm_drain1'||it.id==='plm_drain2') && sel['plm_drain1']?.on && sel['plm_drain2']?.on;
+  const setBadge = drainBoth ? `<span class="set-badge">🎉 세트 500,000원</span>` : '';
   return `
     <div class="item${isOn?' sel':''}" data-id="${it.id}">
       <div class="chk">${isOn?'✓':''}</div>
       <div class="iinfo">
-        <div class="iname">${it.n}${pytag}</div>
+        <div class="iname">${it.n}${pytag}${setBadge}</div>
         <div class="idesc">${it.type === 'select-price' && !isOn ? it.options.filter(o=>o.p>0).map(o=>o.label+' '+Math.round(o.p).toLocaleString()+'원').join(' · ') : it.d}</div>
       </div>
       <div class="iright">
@@ -302,6 +307,37 @@ function toggleBathOpt(idx, key) {
 }
 function setBathFan(idx, val) {
   if (bathRooms[idx]) { bathRooms[idx].opts.fan = parseInt(val)||0; calc(); }
+}
+
+/* ════════ 네고 / 할인 렌더 ════════ */
+function renderNego(it) {
+  return `
+    <div class="item item-wide nego-item" onclick="event.stopPropagation()">
+      <div class="nego-icon">%</div>
+      <div class="iinfo" style="flex:1">
+        <div class="nego-header">
+          <div>
+            <div class="iname" style="color:#e05c5c">네고 / 할인</div>
+            <div class="idesc">마이너스(-) 금액을 입력하면 총 견적에서 차감됩니다</div>
+          </div>
+          ${negoAmt > 0 ? `<span class="nego-badge">− ${fmt(negoAmt)}원</span>` : ''}
+        </div>
+        <div class="nego-input-row" onclick="event.stopPropagation()">
+          <span class="nego-minus">−</span>
+          <input class="nego-input" id="nego-input" type="number" min="0"
+            placeholder="할인 금액 입력 (예: 200000)"
+            value="${negoAmt || ''}"
+            oninput="event.stopPropagation();setNego(this.value)">
+          <span class="iunit">원</span>
+          ${negoAmt > 0 ? `<button class="nego-clear" onclick="event.stopPropagation();setNego(0);document.getElementById('nego-input').value=''">✕ 취소</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function setNego(v) {
+  negoAmt = Math.max(0, parseFloat(v) || 0);
+  calc();
 }
 
 /* ════════ 평수 기반 자동 계산 헬퍼 ════════ */
@@ -553,6 +589,26 @@ function calcTotals() {
     });
   });
 
+  // ── 우수관 방수 + 교체 동시 선택 시 세트 500,000원 네고 처리 ──
+  const drain1 = sel['plm_drain1'];
+  const drain2 = sel['plm_drain2'];
+  if (drain1?.on && drain2?.on) {
+    // 각각 낸 금액 합산
+    const paid1 = 250000 * drain1.q;
+    const paid2 = 350000 * drain2.q;
+    const paidTotal = paid1 + paid2;
+    // 세트 금액: 500,000원 (수량 1세트 기준, 추가 개수는 각 단가 적용)
+    const setAmt = 500000;
+    const discount = paidTotal - setAmt;
+    if (discount > 0) {
+      // 이미 rows/catMap에 반영된 금액을 보정
+      catMap['설비'] = (catMap['설비'] || 0) - discount;
+      baseSub -= discount;
+      // rows에 할인 행 추가
+      rows.push({ catName:'설비', label:'우수관 방수+교체 세트 할인', detail:'동시 선택 시 500,000원 적용', qty:1, u:'세트', unitP:-discount, amt:-discount });
+    }
+  }
+
   // pct 항목
   let pctSub = 0;
   Object.entries(DATA).forEach(([catName, cat]) => {
@@ -570,7 +626,11 @@ function calcTotals() {
   const sub   = baseSub + pctSub;
   const vat   = Math.round(sub * 0.1);
   const total = sub + vat;
-  return { sub, vat, total, catMap, rows };
+  const nego = negoAmt || 0;
+  const subAfterNego = Math.max(0, sub - nego);
+  const vatAfterNego = Math.round(subAfterNego * 0.1);
+  const totalAfterNego = subAfterNego + vatAfterNego;
+  return { sub, vat, total, catMap, rows, nego, subAfterNego, vatAfterNego, totalAfterNego };
 }
 
 /* ════════ 요약 렌더 ════════ */
@@ -580,17 +640,19 @@ function calc() {
   const { sub, vat, total, catMap, rows } = calcTotals();
   const perPy = py > 0 ? Math.round(sub/py) : 0;
 
+  const perPyAfter = py > 0 ? Math.round(subAfterNego/py) : 0;
   document.getElementById('scards').innerHTML = `
-    <div class="scard"><div class="slabel">소계 (VAT 제외)</div><div class="sval">${fmt(sub)}원</div></div>
-    <div class="scard"><div class="slabel">부가세 10%</div><div class="sval">${fmt(vat)}원</div></div>
-    <div class="scard"><div class="slabel">합계 (VAT 포함)</div><div class="sval hi">${fmt(total)}원</div></div>
-    <div class="scard"><div class="slabel">평당 단가</div><div class="sval">${py>0?fmt(perPy)+'원':'-'}</div></div>`;
+    <div class="scard"><div class="slabel">소계 (VAT 제외)</div><div class="sval">${fmt(sub)}원${nego>0?`<span class="nego-sub"> − ${fmt(nego)}원</span>`:''}</div></div>
+    <div class="scard"><div class="slabel">부가세 10%</div><div class="sval">${fmt(vatAfterNego)}원</div></div>
+    <div class="scard"><div class="slabel">합계 (VAT 포함)</div><div class="sval hi">${fmt(totalAfterNego)}원</div></div>
+    <div class="scard"><div class="slabel">평당 단가</div><div class="sval">${py>0?fmt(perPyAfter)+'원':'-'}</div></div>`;
 
   const entries = Object.entries(catMap).filter(([,v])=>v>0);
   document.getElementById('srows').innerHTML = !entries.length
     ? '<p class="empty">항목을 선택하면 견적이 표시됩니다.</p>'
     : entries.map(([k,v]) => `<div class="srow"><span class="lbl">${k}</span><span class="val">${fmt(v)}원</span></div>`).join('')
-      + `<div class="srow tot"><span class="lbl">합계</span><span class="val">${fmt(sub)}원</span></div>`;
+      + (nego > 0 ? `<div class="srow nego-row"><span class="lbl">네고 / 할인</span><span class="val nego-val">− ${fmt(nego)}원</span></div>` : '')
+      + `<div class="srow tot"><span class="lbl">최종 합계</span><span class="val">${fmt(subAfterNego)}원</span></div>`;
 
   renderQuoteDoc({ sub, vat, total, catMap, rows });
 }
@@ -598,7 +660,7 @@ function calc() {
 /* ════════ 견적서 렌더 ════════ */
 function renderQuoteDoc(totals) {
   if (!totals) totals = calcTotals();
-  const { sub, vat, total, catMap, rows } = totals;
+  const { sub, vat, total, catMap, rows, nego, subAfterNego, vatAfterNego, totalAfterNego } = totals;
 
   const clientDate   = document.getElementById('clientDate').value || '';
   const clientName   = document.getElementById('clientName').value || '';
@@ -655,13 +717,13 @@ function renderQuoteDoc(totals) {
   document.getElementById('qitem-body-detail').innerHTML = detailHtml;
   document.getElementById('qitem-body-simple').innerHTML = simpleHtml;
 
-  ['qf-sub-d','qf-sub-s'].forEach(id => document.getElementById(id).textContent = fmtW(sub));
-  ['qf-vat-d','qf-vat-s'].forEach(id => document.getElementById(id).textContent = fmtW(vat));
-  ['qf-total-d','qf-total-s'].forEach(id => document.getElementById(id).textContent = fmtW(total));
+  ['qf-sub-d','qf-sub-s'].forEach(id => document.getElementById(id).textContent = fmtW(sub) + (nego>0?` (네고 − ${fmt(nego)}원)`:''));
+  ['qf-vat-d','qf-vat-s'].forEach(id => document.getElementById(id).textContent = fmtW(vatAfterNego));
+  ['qf-total-d','qf-total-s'].forEach(id => document.getElementById(id).textContent = fmtW(totalAfterNego));
 
-  ['qc-deposit-d','qc-deposit-s'].forEach(id => document.getElementById(id).textContent = fmtW(Math.round(total*0.2)));
-  ['qc-mid-d','qc-mid-s'].forEach(id => document.getElementById(id).textContent = fmtW(Math.round(total*0.3)));
-  ['qc-final-d','qc-final-s'].forEach(id => document.getElementById(id).textContent = fmtW(Math.round(total*0.5)));
+  ['qc-deposit-d','qc-deposit-s'].forEach(id => document.getElementById(id).textContent = fmtW(Math.round(totalAfterNego*0.2)));
+  ['qc-mid-d','qc-mid-s'].forEach(id => document.getElementById(id).textContent = fmtW(Math.round(totalAfterNego*0.3)));
+  ['qc-final-d','qc-final-s'].forEach(id => document.getElementById(id).textContent = fmtW(Math.round(totalAfterNego*0.5)));
 }
 
 /* ════════ 인쇄 모드 ════════ */
@@ -674,7 +736,7 @@ function setPrintMode(m) {
 
 /* ════════ 엑셀 다운로드 ════════ */
 function downloadExcel() {
-  const { sub, vat, total, rows } = calcTotals();
+  const { sub, vat, total, rows, nego, subAfterNego, vatAfterNego, totalAfterNego } = calcTotals();
   const clientDate  = document.getElementById('clientDate').value || today();
   const clientName  = document.getElementById('clientName').value || '고객';
   const clientPhone = document.getElementById('clientPhone').value || '';
@@ -706,11 +768,12 @@ function downloadExcel() {
   });
   d.push([]);
   d.push(['소계 (부가세 제외)','','','','',sub]);
-  d.push(['부가세 (10%)','','','','',vat]);
-  d.push(['총 공사 금액','','','','',total]);
+  if (nego > 0) d.push(['네고 / 할인 (차감)','','','','', -nego]);
+  d.push(['부가세 (10%)','','','','',vatAfterNego]);
+  d.push(['총 공사 금액','','','','',totalAfterNego]);
   d.push([]);
-  d.push(['계약금 (20%)', Math.round(total*0.2), '', '1차 중도금 (30%)', Math.round(total*0.3), '잔금 (50%)']);
-  d.push(['', '', '', '', '', Math.round(total*0.5)]);
+  d.push(['계약금 (20%)', Math.round(totalAfterNego*0.2), '', '1차 중도금 (30%)', Math.round(totalAfterNego*0.3), '잔금 (50%)']);
+  d.push(['', '', '', '', '', Math.round(totalAfterNego*0.5)]);
   d.push([]);
   d.push(['* 부가세 별도 견적입니다.']);
   d.push(['* 본 업체는 전문 기공 인력만 시공합니다.']);
@@ -761,5 +824,7 @@ function resetAll() {
   Object.keys(sel).forEach(id => { sel[id] = { on:false, q:1, val:0, selectIdx:0 }; });
   Object.keys(floorDemoSel).forEach(id => { floorDemoSel[id] = { on:false, q:1 }; });
   bathRooms = [];
+  negoAmt = 0;
+  document.getElementById('nego-input') && (document.getElementById('nego-input').value = '');
   renderItems(); calc();
 }

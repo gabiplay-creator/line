@@ -268,3 +268,42 @@ h1 { font-size:22px; font-weight:500; margin-bottom:4px; }
   font-size:14px; font-weight:600; color:var(--tx);
   min-width:28px; text-align:center;
 }
+
+/* ════════ 각 카테고리 기타 항목 ════════ */
+.item .iprice[data-type="input"] { color: var(--tx3); font-style: italic; }
+
+/* ════════ 네고 / 할인 ════════ */
+.nego-item { border:1.5px dashed #e05c5c !important; cursor:default; background:var(--bg) !important; }
+.nego-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+.nego-badge { font-size:13px; font-weight:700; background:#fde8e8; color:#e05c5c; padding:3px 12px; border-radius:var(--r-pill); }
+.nego-icon { font-size:18px; font-weight:700; color:#e05c5c; margin-top:2px; flex-shrink:0; width:24px; text-align:center; }
+.nego-minus { font-size:22px; font-weight:700; color:#e05c5c; line-height:1; }
+.nego-input-row { display:flex; align-items:center; gap:8px; }
+.nego-input {
+  flex:1; max-width:280px; height:36px;
+  font-size:15px; font-weight:500; text-align:right;
+  padding:0 12px; border:1.5px solid #e05c5c;
+  border-radius:var(--r-sm); background:var(--bg); color:#e05c5c; outline:none;
+}
+.nego-input::placeholder { color:#dba8a8; font-size:12px; font-weight:400; }
+.nego-input:focus { border-color:#c0392b; }
+.nego-clear {
+  font-size:11px; padding:4px 10px; border-radius:var(--r-pill);
+  border:0.5px solid #e05c5c; background:transparent; color:#e05c5c;
+  cursor:pointer; transition:all .15s;
+}
+.nego-clear:hover { background:#fde8e8; }
+
+/* 견적 요약 네고 행 */
+.srow.nego-row { border-bottom:0.5px dashed #e05c5c !important; }
+.nego-val { color:#e05c5c !important; font-weight:700 !important; }
+.nego-sub { font-size:11px; font-weight:500; color:#e05c5c; margin-left:6px; }
+
+/* ════════ 세트 할인 배지 ════════ */
+.set-badge {
+  display:inline-block; font-size:10px; font-weight:700;
+  background:#fff3cd; color:#856404;
+  border:1px solid #ffc107;
+  padding:1px 7px; border-radius:var(--r-pill);
+  margin-left:6px; vertical-align:middle;
+}
