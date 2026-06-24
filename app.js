@@ -5,6 +5,8 @@
 /* ════════ 상태 ════════ */
 const sel = {};   // { id: { on, q, val } }
 const floorDemoSel = {}; // { fd_id: { on, q } }
+// 욕실별 타입 상태: [ {type: 'std'|'high'|'prem'}, ... ]
+let bathRooms = []; // 길이 = 욕실 수
 
 function initSel() {
   Object.values(DATA).forEach(cat =>
@@ -76,6 +78,7 @@ function renderItem(it) {
 
   if (it.type === 'floor-demo') return renderFloorDemo(it, isOn);
   if (it.type === 'mat-option') return renderMatOption(it, isOn);
+  if (it.type === 'bath-rooms') return renderBathRooms(it);
 
   let priceLabel = '';
   if (it.pct) priceLabel = `공사금 ${(it.pct*100).toFixed(0)}% 자동`;
@@ -178,6 +181,67 @@ function renderMatOption(it, isOn) {
     </div>`;
 }
 
+/* 욕실 수 + 타입 선택 렌더 */
+const BATH_TYPES = [
+  { key:'std',  label:'스탠다드형', p:3000000, color:'#4a7c59' },
+  { key:'high', label:'고급형',     p:4500000, color:'#185fa5' },
+  { key:'prem', label:'프리미엄형', p:5500000, color:'#7b3fa0' },
+];
+
+function renderBathRooms(it) {
+  const count = bathRooms.length;
+  const PRICES = { std:3000000, high:4500000, prem:5500000 };
+  const total  = bathRooms.reduce((s,r) => s + (PRICES[r.type]||0), 0);
+
+  // 욕실 타입 선택 카드들
+  let roomCards = '';
+  for (let i = 0; i < count; i++) {
+    const r = bathRooms[i];
+    roomCards += `<div class="bath-room-card">
+      <div class="bath-room-label">${i+1}번째 욕실</div>
+      <div class="bath-type-btns">
+        ${BATH_TYPES.map(t => `
+          <button class="bath-type-btn${r.type===t.key?' active':''}"
+            style="${r.type===t.key?'background:'+t.color+';color:#fff;border-color:'+t.color:''}"
+            onclick="event.stopPropagation();setBathType(${i},'${t.key}')">
+            ${t.label}<br><span class="bath-type-price">${fmt(t.p)}원</span>
+          </button>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  return `
+    <div class="item item-wide bath-rooms-item" onclick="event.stopPropagation()">
+      <div class="iinfo" style="flex:1">
+        <div class="bath-header">
+          <div>
+            <div class="iname">욕실 수 선택</div>
+            <div class="idesc">욕실 수를 먼저 선택 후 각각 타입을 지정하세요</div>
+          </div>
+          <div class="bath-counter">
+            <button class="qbtn" onclick="adjBathCount(-1)">−</button>
+            <span class="bath-count-num">${count}</span>
+            <button class="qbtn" onclick="adjBathCount(1)">+</button>
+            <span class="iunit">실</span>
+            ${count > 0 ? `<span class="bath-total-badge">${fmtW(total)}</span>` : ''}
+          </div>
+        </div>
+        ${count > 0 ? `<div class="bath-rooms-grid">${roomCards}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function adjBathCount(d) {
+  const newCount = Math.max(0, bathRooms.length + d);
+  while (bathRooms.length < newCount) bathRooms.push({ type: 'std' });
+  while (bathRooms.length > newCount) bathRooms.pop();
+  renderItems(); calc();
+}
+
+function setBathType(idx, type) {
+  if (bathRooms[idx]) { bathRooms[idx].type = type; renderItems(); calc(); }
+}
+
 function calcYoungDoorBase() {
   let base = 0;
   ['carp_young_door','carp_young_orig'].forEach(id => {
@@ -230,6 +294,20 @@ function calcTotals() {
       let unitP = it.p || 0;
       let detail = it.d;
       let qtyLabel = s.q;
+
+      if (it.type === 'bath-rooms') {
+        // 욕실 수+타입 계산
+        const BPRICES = { std:3000000, high:4500000, prem:5500000 };
+        const BLABELS = { std:'스탠다드형', high:'고급형', prem:'프리미엄형' };
+        bathRooms.forEach((r, i) => {
+          const a = BPRICES[r.type] || 0;
+          amt += a;
+          rows.push({ catName, label: `욕실 ${i+1} — ${BLABELS[r.type]}`, detail:'', qty:1, u:'실', unitP:a, amt:a });
+        });
+        if (amt > 0) catMap[catName] = (catMap[catName]||0) + amt;
+        baseSub += amt;
+        return;
+      }
 
       if (it.type === 'floor-demo') {
         // 마루 철거 세부 합산
@@ -480,5 +558,6 @@ function applyNumFmt(ws, data) {
 function resetAll() {
   Object.keys(sel).forEach(id => { sel[id] = { on:false, q:1, val:0, selectIdx:0 }; });
   Object.keys(floorDemoSel).forEach(id => { floorDemoSel[id] = { on:false, q:1 }; });
+  bathRooms = [];
   renderItems(); calc();
 }

@@ -197,3 +197,25 @@ h1 { font-size:22px; font-weight:500; margin-bottom:4px; }
   .quote-doc { padding:16px 14px; }
   .floor-demo-grid { grid-template-columns:1fr; }
 }
+
+/* ════════ 욕실 수 + 타입 선택 ════════ */
+.bath-rooms-item { cursor: default; align-items: flex-start; }
+.bath-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+.bath-counter { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.bath-count-num { font-size:20px; font-weight:600; color:var(--tx); min-width:24px; text-align:center; }
+.bath-total-badge { font-size:12px; font-weight:600; background:var(--info-bg); color:var(--info-tx); padding:2px 10px; border-radius:var(--r-pill); margin-left:4px; }
+
+.bath-rooms-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:10px; }
+.bath-room-card { background:var(--bg3); border-radius:var(--r-md); padding:10px 12px; border:0.5px solid var(--bd); }
+.bath-room-label { font-size:11px; font-weight:600; color:var(--tx2); margin-bottom:8px; }
+.bath-type-btns { display:flex; gap:6px; flex-wrap:wrap; }
+.bath-type-btn {
+  flex:1; min-width:70px;
+  padding:7px 6px; font-size:11px; font-weight:500;
+  border:1.5px solid var(--bd2); border-radius:var(--r-sm);
+  background:var(--bg); color:var(--tx);
+  cursor:pointer; transition:all .15s; text-align:center; line-height:1.4;
+}
+.bath-type-btn:hover { border-color:var(--tx2); }
+.bath-type-btn.active { font-weight:700; }
+.bath-type-price { font-size:10px; font-weight:400; opacity:.85; }

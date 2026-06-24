@@ -124,9 +124,7 @@ const DATA = {
      5. 욕실
   ════════════════════════════════ */
   "욕실": { items: [
-    { id:"bath_std",  n:"스탠다드형",  d:"3,000,000원",  type:"stepper", u:"실", p:3000000 },
-    { id:"bath_high", n:"고급형",      d:"4,500,000원",  type:"stepper", u:"실", p:4500000 },
-    { id:"bath_prem", n:"프리미엄형",  d:"5,500,000원",  type:"stepper", u:"실", p:5500000 },
+    { id:"bath_rooms", n:"욕실 수 선택", d:"욕실 갯수를 먼저 선택하세요", type:"bath-rooms", special:true },
     // 추가 옵션
     { id:"bath_faucet",   n:"수전금구 업그레이드", d:"30만/개",  type:"stepper", u:"개", p:300000 },
     { id:"bath_shower",   n:"해바라기 수전 추가",  d:"15만/개",  type:"stepper", u:"개", p:150000 },
