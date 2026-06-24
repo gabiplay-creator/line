@@ -63,6 +63,8 @@ const DATA = {
     { id:"door_sw2", n:"스윙 양개도어", d:"730,000원",  type:"simple", u:"개", p:730000 },
     { id:"door_sl",  n:"원슬라이딩",   d:"550,000원",  type:"simple", u:"개", p:550000 },
     { id:"door_4s",  n:"4연동",         d:"980,000원",  type:"simple", u:"개", p:980000 },
+    // 구분선
+    { id:"door_divider", n:"", d:"", type:"divider" },
     // 추가 옵션
     { id:"door_opt_size",   n:"옵션 — 사이즈 추가", d:"1개당 30,000원",  type:"stepper", u:"개", p:30000 },
     { id:"door_opt_band",   n:"옵션 — 띠장 추가",   d:"20,000원",        type:"simple",  u:"개", p:20000 },

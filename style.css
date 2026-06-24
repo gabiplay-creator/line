@@ -495,3 +495,25 @@ h1 { font-size:22px; font-weight:500; margin-bottom:4px; }
 .bath-water-opt:hover { border-color: var(--bd2); }
 .bath-water-opt.on { border-color: #185fa5; background: var(--info-bg); }
 .bath-water-opt.on .bath-opt-chk { background: #185fa5; border-color: #185fa5; color: #fff; }
+
+/* ════════ 아이템 섹션 구분선 ════════ */
+.items-divider {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 0 2px;
+  cursor: default;
+}
+.items-divider::before,
+.items-divider::after {
+  content: ''; flex: 1;
+  height: 1px; background: var(--bd2);
+}
+.items-divider-label {
+  font-size: 11px; font-weight: 600;
+  color: var(--tx3);
+  padding: 2px 10px;
+  background: var(--bg3);
+  border: 0.5px solid var(--bd2);
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+}

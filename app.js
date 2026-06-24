@@ -19,7 +19,7 @@ function initSel() {
   Object.values(DATA).forEach(cat =>
     cat.items.forEach(it => {
       // bath-demo/water/rooms/cat-extra 는 항상 on=true (별도 상태로 관리)
-      const alwaysOn = ['bath-demo','bath-water','bath-rooms','cat-extra'].includes(it.type);
+      const alwaysOn = ['bath-demo','bath-water','bath-rooms','cat-extra','divider'].includes(it.type);
       if (!sel[it.id]) sel[it.id] = { on: alwaysOn, q: 1, val: 0, selectIdx: 0 };
       else if (alwaysOn) sel[it.id].on = true;
       if (it.type === 'cat-extra' && !catExtraState[it.id]) {
@@ -97,6 +97,7 @@ function renderItem(it) {
   if (it.type === 'nego') return renderNego(it);
   if (it.type === 'bath-water') return renderBathWater(it);
   if (it.type === 'bath-demo') return renderBathDemo(it);
+  if (it.type === 'divider') return renderDivider(it);
   if (it.type === 'cat-extra') return renderCatExtra(it);
 
   let priceLabel = '';
@@ -397,6 +398,13 @@ function setCatExtraNego(id, v) {
   calc();
 }
 
+/* ════════ 섹션 구분선 ════════ */
+function renderDivider(it) {
+  return `<div class="items-divider" data-id="${it.id}">
+    <span class="items-divider-label">추가 옵션</span>
+  </div>`;
+}
+
 /* ════════ 욕실 철거 렌더 ════════ */
 function renderBathDemo(it) {
   const total = (bathDemoState.living ? 800000 : 0) + (bathDemoState.master ? 800000 : 0);
@@ -679,7 +687,7 @@ function bindItemEvents() {
 function togItem(id) {
   const it = findItem(id);
   // cat-extra / bath-demo / bath-water / bath-rooms 는 별도 상태로 관리 → s.on=true 고정
-  if (it?.type === 'cat-extra') return;
+  if (it?.type === 'cat-extra' || it?.type === 'divider') return;
   if (it?.type === 'bath-demo' || it?.type === 'bath-water' || it?.type === 'bath-rooms') {
     // s.on을 true로 고정해서 calcTotals의 s.on 체크를 통과하게 함
     sel[it.id].on = true;
@@ -711,6 +719,7 @@ function calcTotals() {
   Object.entries(DATA).forEach(([catName, cat]) => {
     cat.items.forEach(it => {
       if (it.pct) return;
+      if (it.type === 'divider') return;
       const s = sel[it.id];
 
       // cat-extra / bath-rooms / bath-water 는 s.on 체크 없이 항상 계산
