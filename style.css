@@ -244,3 +244,27 @@ h1 { font-size:22px; font-weight:500; margin-bottom:4px; }
 
 .bath-fan-row { display:flex; align-items:center; gap:8px; margin-top:4px; }
 .bath-fan-row .bath-opt-label { font-size:11px; font-weight:500; color:var(--tx2); }
+
+/* ════════ 자동 계산 항목 (인건비/폐기물) ════════ */
+.auto-item { cursor:pointer; }
+.auto-item-header { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; flex-wrap:wrap; }
+.auto-result { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.auto-count-badge {
+  font-size:13px; font-weight:700;
+  background:var(--warn-bg); color:var(--warn-tx);
+  padding:3px 12px; border-radius:var(--r-pill);
+}
+.item.sel .auto-count-badge { background:var(--accent); color:var(--accent-t); }
+.auto-amt { font-size:13px; font-weight:700; color:var(--info-tx); }
+
+.auto-adjust-row {
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:8px;
+  margin-top:10px; padding-top:10px;
+  border-top:0.5px dashed var(--bd2);
+}
+.auto-base-info { font-size:10px; color:var(--tx3); flex:1; min-width:200px; }
+.auto-adj-num {
+  font-size:14px; font-weight:600; color:var(--tx);
+  min-width:28px; text-align:center;
+}

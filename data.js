@@ -17,8 +17,8 @@ const DATA = {
   ════════════════════════════════ */
   "철거": { items: [
     {
-      id:"dem_labor", n:"인건비", d:"1품당 200,000원 — 품 수 선택",
-      type:"stepper", u:"품", p:200000
+      id:"dem_labor", n:"인건비", d:"평수에 따라 품 수 자동 계산 (품당 250,000원)",
+      type:"auto-labor", special:true
     },
     {
       id:"dem_waterproof", n:"방수", d:"1~3 선택, 1개소당 200,000원",
@@ -29,8 +29,8 @@ const DATA = {
       type:"floor-demo", special:true
     },
     {
-      id:"dem_waste", n:"폐기물", d:"차량당 250,000원 (1~2차)",
-      type:"stepper", u:"차", p:250000, min:1, max:2
+      id:"dem_waste", n:"폐기물", d:"평수에 따라 차량 수 자동 계산 (차량당 450,000원)",
+      type:"auto-waste", special:true
     },
     {
       id:"dem_waste_floor", n:"폐기물 추가 — 스펀지·플라스틱 마루",

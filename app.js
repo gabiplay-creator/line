@@ -79,6 +79,8 @@ function renderItem(it) {
   if (it.type === 'floor-demo') return renderFloorDemo(it, isOn);
   if (it.type === 'mat-option') return renderMatOption(it, isOn);
   if (it.type === 'bath-rooms') return renderBathRooms(it);
+  if (it.type === 'auto-labor') return renderAutoLabor(it, isOn);
+  if (it.type === 'auto-waste') return renderAutoWaste(it, isOn);
 
   let priceLabel = '';
   if (it.pct) priceLabel = `공사금 ${(it.pct*100).toFixed(0)}% 자동`;
@@ -302,6 +304,110 @@ function setBathFan(idx, val) {
   if (bathRooms[idx]) { bathRooms[idx].opts.fan = parseInt(val)||0; calc(); }
 }
 
+/* ════════ 평수 기반 자동 계산 헬퍼 ════════ */
+function getLaborCount(py) {
+  if (py <= 21) return 3;
+  if (py <= 24) return 4;
+  if (py <= 32) return 5;
+  if (py <= 40) return 6;
+  if (py <= 48) return 7;
+  return 8; // 56평+
+}
+
+function getWasteCount(py) {
+  if (py <= 32) return 2;
+  if (py <= 48) return 3;
+  return 4;
+}
+
+function renderAutoLabor(it, isOn) {
+  const py = getPyung();
+  const autoCount = getLaborCount(py);
+  const s = sel[it.id];
+  // 수동 조정값 (0이면 자동)
+  const manualAdj = s.val || 0;
+  const count = autoCount + manualAdj;
+  const amt = count * 250000;
+
+  return `
+    <div class="item item-wide auto-item${isOn?' sel':''}" data-id="${it.id}">
+      <div class="chk">${isOn?'✓':''}</div>
+      <div class="iinfo" style="flex:1">
+        <div class="auto-item-header">
+          <div>
+            <div class="iname">${it.n}</div>
+            <div class="idesc">품당 250,000원 · 평수(${py}평) 기준 자동 계산</div>
+          </div>
+          <div class="auto-result">
+            <span class="auto-count-badge">${count}품</span>
+            <span class="auto-amt">${isOn ? fmtW(amt) : ''}</span>
+          </div>
+        </div>
+        ${isOn ? `
+        <div class="auto-adjust-row" onclick="event.stopPropagation()">
+          <span class="auto-base-info">기본 ${autoCount}품 (${py}평 기준)</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:11px;color:var(--tx2)">품 수 조정</span>
+            <button class="qbtn" onclick="event.stopPropagation();adjAutoLabor(-1)">−</button>
+            <span class="auto-adj-num">${manualAdj > 0 ? '+'+manualAdj : manualAdj}</span>
+            <button class="qbtn" onclick="event.stopPropagation();adjAutoLabor(1)">+</button>
+            <span style="font-size:11px;color:var(--tx3)">최종 ${count}품 = ${fmtW(amt)}</span>
+          </div>
+        </div>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderAutoWaste(it, isOn) {
+  const py = getPyung();
+  const autoCount = getWasteCount(py);
+  const s = sel[it.id];
+  const manualAdj = s.val || 0;
+  const count = Math.max(1, autoCount + manualAdj);
+  const amt = count * 450000;
+
+  return `
+    <div class="item item-wide auto-item${isOn?' sel':''}" data-id="${it.id}">
+      <div class="chk">${isOn?'✓':''}</div>
+      <div class="iinfo" style="flex:1">
+        <div class="auto-item-header">
+          <div>
+            <div class="iname">${it.n}</div>
+            <div class="idesc">차량당 450,000원 · 평수(${py}평) 기준 자동 계산</div>
+          </div>
+          <div class="auto-result">
+            <span class="auto-count-badge">${count}대</span>
+            <span class="auto-amt">${isOn ? fmtW(amt) : ''}</span>
+          </div>
+        </div>
+        ${isOn ? `
+        <div class="auto-adjust-row" onclick="event.stopPropagation()">
+          <span class="auto-base-info">기본 ${autoCount}대 (${py}평 기준 · 21~32평 2대 / ~48평 3대 / 이상 4대)</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:11px;color:var(--tx2)">차량 수 조정</span>
+            <button class="qbtn" onclick="event.stopPropagation();adjAutoWaste(-1)">−</button>
+            <span class="auto-adj-num">${manualAdj > 0 ? '+'+manualAdj : manualAdj}</span>
+            <button class="qbtn" onclick="event.stopPropagation();adjAutoWaste(1)">+</button>
+            <span style="font-size:11px;color:var(--tx3)">최종 ${count}대 = ${fmtW(amt)}</span>
+          </div>
+        </div>` : ''}
+      </div>
+    </div>`;
+}
+
+function adjAutoLabor(d) {
+  const s = sel['dem_labor'];
+  s.val = (s.val || 0) + d;
+  renderItems(); calc();
+}
+function adjAutoWaste(d) {
+  const s = sel['dem_waste'];
+  const py = getPyung();
+  const autoCount = getWasteCount(py);
+  s.val = Math.max(1 - autoCount, (s.val || 0) + d);
+  renderItems(); calc();
+}
+
 function calcYoungDoorBase() {
   let base = 0;
   ['carp_young_door','carp_young_orig'].forEach(id => {
@@ -327,6 +433,7 @@ function togItem(id) {
   if (s.on) {
     s.q = (it?.pyAuto) ? Math.max(1, Math.round(getPyung())) : 1;
     if (it?.type === 'select-price') s.selectIdx = 0;
+    if (it?.type === 'auto-labor' || it?.type === 'auto-waste') s.val = 0;
   }
   renderItems(); calc();
 }
@@ -354,6 +461,32 @@ function calcTotals() {
       let unitP = it.p || 0;
       let detail = it.d;
       let qtyLabel = s.q;
+
+      if (it.type === 'auto-labor') {
+        const py = getPyung();
+        const autoCount = getLaborCount(py);
+        const adj = s.val || 0;
+        const count = autoCount + adj;
+        const a = count * 250000;
+        if (!a) return;
+        catMap[catName] = (catMap[catName]||0) + a;
+        baseSub += a;
+        rows.push({ catName, label:'인건비', detail:`${py}평 기준 ${count}품`, qty:count, u:'품', unitP:250000, amt:a });
+        return;
+      }
+
+      if (it.type === 'auto-waste') {
+        const py = getPyung();
+        const autoCount = getWasteCount(py);
+        const adj = s.val || 0;
+        const count = Math.max(1, autoCount + adj);
+        const a = count * 450000;
+        if (!a) return;
+        catMap[catName] = (catMap[catName]||0) + a;
+        baseSub += a;
+        rows.push({ catName, label:'폐기물', detail:`${py}평 기준 ${count}대`, qty:count, u:'대', unitP:450000, amt:a });
+        return;
+      }
 
       if (it.type === 'bath-rooms') {
         // 욕실별 타입 + 옵션 계산
