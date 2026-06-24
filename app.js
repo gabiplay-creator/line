@@ -10,11 +10,16 @@ let bathRooms = []; // 길이 = 욕실 수
 let negoAmt = 0;    // 네고(할인) 금액 — 항상 양수로 저장, 총액에서 차감
 // 화장실 방수: [ { type: '1st'|'2nd', count: 1 }, ... ] — 개소별
 let bathWaterList = [];
+// 카테고리별 기타/네고: { [id]: { text:'', amt:0, nego:0 } }
+const catExtraState = {};
 
 function initSel() {
   Object.values(DATA).forEach(cat =>
     cat.items.forEach(it => {
       if (!sel[it.id]) sel[it.id] = { on: false, q: 1, val: 0, selectIdx: 0 };
+      if (it.type === 'cat-extra' && !catExtraState[it.id]) {
+        catExtraState[it.id] = { text:'', amt:0, nego:0 };
+      }
     })
   );
   FLOOR_DEMO_TYPES.forEach(ft => {
@@ -86,6 +91,7 @@ function renderItem(it) {
   if (it.type === 'auto-waste') return renderAutoWaste(it, isOn);
   if (it.type === 'nego') return renderNego(it);
   if (it.type === 'bath-water') return renderBathWater(it);
+  if (it.type === 'cat-extra') return renderCatExtra(it);
 
   let priceLabel = '';
   if (it.pct) priceLabel = `공사금 ${(it.pct*100).toFixed(0)}% 자동`;
@@ -312,6 +318,61 @@ function setBathFan(idx, val) {
   if (bathRooms[idx]) { bathRooms[idx].opts.fan = parseInt(val)||0; calc(); }
 }
 
+/* ════════ 카테고리별 기타 / 네고 렌더 ════════ */
+function renderCatExtra(it) {
+  const st = catExtraState[it.id] || { text:'', amt:0, nego:0 };
+  const netAmt = (st.amt||0) - (st.nego||0);
+  const hasData = st.amt > 0 || st.nego > 0;
+
+  return `
+    <div class="item item-wide cat-extra-item" onclick="event.stopPropagation()">
+      <div class="iinfo" style="flex:1">
+        <div class="cat-extra-header">
+          <div class="iname" style="font-size:13px">기타 항목 &amp; 네고</div>
+          ${hasData ? `<span class="cat-extra-net ${netAmt<0?'neg':'pos'}">${netAmt>=0?'+':''}${fmt(netAmt)}원</span>` : ''}
+        </div>
+        <div class="cat-extra-grid" onclick="event.stopPropagation()">
+
+          <!-- 기타 금액 입력 -->
+          <div class="cat-extra-col">
+            <div class="cat-extra-label">📝 기타 항목</div>
+            <input class="cat-extra-text" type="text" placeholder="항목명 메모 (예: 도어락 교체)"
+              value="${st.text||''}"
+              oninput="event.stopPropagation();setCatExtraText('${it.id}',this.value)">
+            <div class="cat-extra-amt-row">
+              <span class="cat-extra-sign">+</span>
+              <input class="cat-extra-num" type="number" min="0" placeholder="금액 입력"
+                value="${st.amt||''}"
+                oninput="event.stopPropagation();setCatExtraAmt('${it.id}',this.value)">
+              <span class="iunit">원</span>
+            </div>
+          </div>
+
+          <!-- 네고 입력 -->
+          <div class="cat-extra-col">
+            <div class="cat-extra-label" style="color:#e05c5c">🔻 네고 / 할인</div>
+            <input class="cat-extra-text" type="text" placeholder="네고 사유 (예: 현장 특이사항)"
+              value="${st.negoText||''}"
+              oninput="event.stopPropagation();setCatExtraNegoText('${it.id}',this.value)">
+            <div class="cat-extra-amt-row">
+              <span class="cat-extra-sign" style="color:#e05c5c">−</span>
+              <input class="cat-extra-num nego" type="number" min="0" placeholder="할인 금액"
+                value="${st.nego||''}"
+                oninput="event.stopPropagation();setCatExtraNego('${it.id}',this.value)">
+              <span class="iunit">원</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>`;
+}
+
+function setCatExtraText(id, v)      { if(!catExtraState[id]) catExtraState[id]={text:'',amt:0,nego:0}; catExtraState[id].text=v; }
+function setCatExtraNegoText(id, v)  { if(!catExtraState[id]) catExtraState[id]={text:'',amt:0,nego:0}; catExtraState[id].negoText=v; }
+function setCatExtraAmt(id, v)       { if(!catExtraState[id]) catExtraState[id]={text:'',amt:0,nego:0}; catExtraState[id].amt=Math.max(0,parseFloat(v)||0); calc(); }
+function setCatExtraNego(id, v)      { if(!catExtraState[id]) catExtraState[id]={text:'',amt:0,nego:0}; catExtraState[id].nego=Math.max(0,parseFloat(v)||0); calc(); }
+
 /* ════════ 화장실 방수 렌더 ════════ */
 const BATH_WATER_TYPES = [
   { key:'1st', label:'1차 방수',   p:200000, desc:'1차 방수 처리' },
@@ -529,8 +590,10 @@ function bindItemEvents() {
 }
 
 function togItem(id) {
-  const s = sel[id]; s.on = !s.on;
   const it = findItem(id);
+  // cat-extra 는 클릭해도 토글 안 함 (항상 표시)
+  if (it?.type === 'cat-extra') return;
+  const s = sel[id]; s.on = !s.on;
   if (s.on) {
     s.q = (it?.pyAuto) ? Math.max(1, Math.round(getPyung())) : 1;
     if (it?.type === 'select-price') s.selectIdx = 0;
@@ -637,6 +700,24 @@ function calcTotals() {
         if (!amt) return;
         unitP = amt;
         qtyLabel = 1;
+      } else if (it.type === 'cat-extra') {
+        const st = catExtraState[it.id];
+        if (!st) return;
+        const extraAmt = st.amt || 0;
+        const extraNego = st.nego || 0;
+        const net = extraAmt - extraNego;
+        if (!extraAmt && !extraNego) return;
+        if (extraAmt > 0) {
+          catMap[catName] = (catMap[catName]||0) + extraAmt;
+          baseSub += extraAmt;
+          rows.push({ catName, label: st.text || '기타', detail:'직접 입력', qty:1, u:'식', unitP:extraAmt, amt:extraAmt });
+        }
+        if (extraNego > 0) {
+          catMap[catName] = (catMap[catName]||0) - extraNego;
+          baseSub -= extraNego;
+          rows.push({ catName, label: `네고 (${st.negoText||'할인'})`, detail:'차감', qty:1, u:'식', unitP:-extraNego, amt:-extraNego });
+        }
+        return;
       } else if (it.type === 'mat-option') {
         amt = Math.round(calcYoungDoorBase() * 0.4);
         if (!amt) return;
@@ -901,6 +982,7 @@ function resetAll() {
   bathRooms = [];
   negoAmt = 0;
   bathWaterList = [];
+  Object.keys(catExtraState).forEach(id => { catExtraState[id] = { text:'', amt:0, nego:0 }; });
   document.getElementById('nego-input') && (document.getElementById('nego-input').value = '');
   renderItems(); calc();
 }

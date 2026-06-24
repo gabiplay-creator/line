@@ -313,3 +313,68 @@ h1 { font-size:22px; font-weight:500; margin-bottom:4px; }
   background:var(--bg3); border-radius:var(--r-md);
   padding:10px 12px; border:0.5px solid var(--bd);
 }
+
+/* ════════ 카테고리별 기타/네고 ════════ */
+.cat-extra-item {
+  border:0.5px dashed var(--bd2) !important;
+  background:var(--bg2) !important;
+  cursor:default !important;
+}
+.cat-extra-item:hover { border-color:var(--accent) !important; }
+
+.cat-extra-header {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:10px;
+}
+.cat-extra-net {
+  font-size:13px; font-weight:700;
+  padding:2px 10px; border-radius:var(--r-pill);
+}
+.cat-extra-net.pos { background:var(--info-bg); color:var(--info-tx); }
+.cat-extra-net.neg { background:#fde8e8; color:#e05c5c; }
+
+.cat-extra-grid {
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:12px;
+}
+@media (max-width:600px) {
+  .cat-extra-grid { grid-template-columns:1fr; }
+}
+
+.cat-extra-col {
+  background:var(--bg);
+  border:0.5px solid var(--bd);
+  border-radius:var(--r-md);
+  padding:10px 12px;
+  display:flex; flex-direction:column; gap:6px;
+}
+
+.cat-extra-label {
+  font-size:11px; font-weight:600;
+  color:var(--tx2); margin-bottom:2px;
+}
+
+.cat-extra-text {
+  font-size:12px; padding:5px 8px;
+  border:0.5px solid var(--bd2); border-radius:var(--r-sm);
+  background:var(--bg2); color:var(--tx); outline:none; width:100%;
+}
+.cat-extra-text:focus { border-color:var(--accent); background:var(--bg); }
+
+.cat-extra-amt-row {
+  display:flex; align-items:center; gap:6px;
+}
+.cat-extra-sign {
+  font-size:18px; font-weight:700; color:var(--tx2);
+  flex-shrink:0; line-height:1;
+}
+.cat-extra-num {
+  flex:1; height:32px; font-size:13px; font-weight:500;
+  text-align:right; padding:0 8px;
+  border:0.5px solid var(--bd2); border-radius:var(--r-sm);
+  background:var(--bg); color:var(--tx); outline:none;
+}
+.cat-extra-num:focus { border-color:var(--accent); }
+.cat-extra-num.nego { border-color:#e8aaaa; color:#e05c5c; }
+.cat-extra-num.nego:focus { border-color:#e05c5c; }

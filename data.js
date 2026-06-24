@@ -30,7 +30,7 @@ const DATA = {
       type:"auto-waste", special:true
     },
 
-    { id:"dem_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
+    { id:"dem_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
   /* ════════════════════════════════
@@ -47,7 +47,7 @@ const DATA = {
     { id:"plm_drain2", n:"우수관 교체",     d:"개당 350,000원 (방수와 동시 선택 시 세트 500,000원)", type:"stepper",u:"개", p:350000 },
     { id:"plm_living", n:"거실 확장 (단열포함)", d:"2,500,000원",                type:"simple", u:"식", p:2500000 },
     { id:"plm_room",   n:"방 확장 (단열포함)",   d:"2,000,000원",                type:"simple", u:"식", p:2000000 },
-    { id:"plm_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
+    { id:"plm_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
   /* ════════════════════════════════
@@ -87,7 +87,7 @@ const DATA = {
     { id:"door_opt_gansal",  n:"옵션 — 간살",   d:"400,000원", type:"simple", u:"식", p:400000 },
     { id:"door_opt_damper",  n:"옵션 — 댐퍼",   d:"130,000원", type:"simple", u:"식", p:130000 },
     { id:"door_opt_labor",   n:"옵션 — 인건비", d:"금액 직접 입력", type:"input", u:"원" },
-    { id:"door_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
+    { id:"door_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
   /* ════════════════════════════════
@@ -115,7 +115,7 @@ const DATA = {
       ]
     },
     { id:"carp_young_mat", n:"영림 옵션 — 매트", d:"선택 시 문 금액의 40% 추가", type:"mat-option", special:true },
-    { id:"carp_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
+    { id:"carp_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
   /* ════════════════════════════════
@@ -123,7 +123,7 @@ const DATA = {
   ════════════════════════════════ */
   "욕실": { items: [
     { id:"bath_rooms", n:"욕실 수 선택", d:"욕실 갯수를 먼저 선택하세요", type:"bath-rooms", special:true },
-    { id:"bath_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
+    { id:"bath_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
   /* ════════════════════════════════
@@ -133,7 +133,7 @@ const DATA = {
     { id:"tile_enter", n:"현관 (600×600)",  d:"250,000원",              type:"simple",  u:"식", p:250000 },
     { id:"tile_balc",  n:"발코니 (300×300)",d:"1EA당 200,000원",        type:"stepper", u:"EA", p:200000 },
     { id:"tile_kitchen",n:"주방벽 (600×600)",d:"350,000원",             type:"simple",  u:"식", p:350000 },
-    { id:"tile_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
+    { id:"tile_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
   /* ════════════════════════════════
@@ -146,7 +146,7 @@ const DATA = {
     { id:"wall_42", n:"42평 (9품)",  d:"2,700,000원", type:"simple", u:"식", p:2700000 },
     { id:"wall_48", n:"48평 (10품)", d:"3,000,000원", type:"simple", u:"식", p:3000000 },
     { id:"wall_add", n:"품 추가",    d:"1품당 300,000원", type:"stepper", u:"품", p:300000 },
-    { id:"wall_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
+    { id:"wall_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
   /* ════════════════════════════════
@@ -163,7 +163,7 @@ const DATA = {
     { id:"w8",  n:"KCC HWONE 225공틀단창",    d:"삼성/두산 48평형 TPS 단열/22T 로이",  u:"개", p:950000,  type:"stepper" },
     { id:"w9",  n:"창호 철거비 (30평형)",     d:"기존 창호 철거 및 폐기물 처리",        u:"식", p:400000,  type:"simple"  },
     { id:"w10", n:"양중비",                   d:"자재 운반 양중비용",                    u:"식", p:200000,  type:"simple"  },
-    { id:"win_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
+    { id:"win_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
   /* ════════════════════════════════
@@ -187,7 +187,7 @@ const DATA = {
     { id:"f15", n:"동화 나투스 진 시공포함",d:"시공포함",               u:"평", p:120000, type:"pyung-unit", pyAuto:true },
     { id:"f16", n:"강화마루 클릭",        d:"동화 강화마루",            u:"평", p:85000,  type:"pyung-unit", pyAuto:true },
     { id:"f19", n:"기본 시공비",          d:"기본 진입비용 (10평 기준)",u:"식", p:250000, type:"simple" },
-    { id:"floor_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
+    { id:"floor_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
   /* ════════════════════════════════
@@ -215,7 +215,7 @@ const DATA = {
     { id:"s3", n:"방범창 1200×2100 거실",    d:"고구려시스템", u:"개", p:467000, type:"stepper" },
     { id:"s4", n:"방범창 900×2200 다용도실", d:"고구려시스템", u:"개", p:426000, type:"stepper" },
     { id:"s5", n:"방범창 주방 600×500",      d:"고구려시스템", u:"개", p:205000, type:"stepper" },
-    { id:"sec_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
+    { id:"sec_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
   /* ════════════════════════════════
@@ -232,7 +232,7 @@ const DATA = {
     { id:"e8",  n:"인덕션 라인 신설",         d:"라인+콘센트 2구",        u:"식",   p:200000,  type:"simple"  },
     { id:"e9",  n:"3인치 주백 LED",           d:"매입등 시공비 포함",     u:"개",   p:4500,    type:"stepper" },
     { id:"e10", n:"T5 1200 주백",             d:"형광등 교체",            u:"개",   p:6500,    type:"stepper" },
-    { id:"elec_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
+    { id:"elec_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
   /* ════════════════════════════════
@@ -249,7 +249,7 @@ const DATA = {
     { id:"fu8",  n:"싱크대 배관 철거",      d:"기존 배관 철거",        u:"식",   p:150000,  type:"simple" },
     { id:"fu9",  n:"실리콘 마감 전체",      d:"집 전체 실리콘 마감",   u:"식",   p:350000,  type:"simple" },
     { id:"fu10", n:"탄성코트 발코니",       d:"프리미엄 탄성코팅",     u:"개소", p:450000,  type:"stepper"},
-    { id:"furn_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
+    { id:"furn_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
   /* ════════════════════════════════
@@ -260,7 +260,7 @@ const DATA = {
     { id:"etc2", n:"업체 이윤 (공사금액 10%)",  d:"합계의 10% 자동 계산",   u:"식", p:0, pct:0.1 },
     { id:"etc3", n:"입주청소",                   d:"기본 입주청소",           u:"식", p:300000,  type:"simple"  },
     { id:"etc4", n:"공사신고+보양비",            d:"승강기 사용료+보양비",    u:"식", p:300000,  type:"simple"  },
-    { id:"etc5", n:"기타 (직접 입력)",           d:"수기 금액 입력",          u:"원", type:"input" },
+    { id:"etc5", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
     { id:"etc_nego", n:"네고 / 할인", d:"마이너스(-) 금액 입력 — 총액에서 차감", type:"nego", special:true },
   ]},
 };
