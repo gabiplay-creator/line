@@ -797,18 +797,42 @@ function calc() {
   document.getElementById('sqm').textContent = `(약 ${Math.round(py*3.3)}㎡)`;
   const { sub, vat, total, catMap, rows, nego, subAfterNego, vatAfterNego, totalAfterNego } = calcTotals();
   const perPyAfter = py > 0 ? Math.round(subAfterNego/py) : 0;
+  // 소계카드: 네고 있으면 취소선 + 할인 표시
+  const subCardInner = nego > 0
+    ? `<span style="text-decoration:line-through;color:var(--tx3);font-size:14px">${fmt(sub)}원</span><span class="nego-sub">− ${fmt(nego)}원 할인</span>`
+    : `${fmt(sub)}원`;
+
   document.getElementById('scards').innerHTML = `
-    <div class="scard"><div class="slabel">소계 (VAT 제외)</div><div class="sval">${fmt(sub)}원${nego>0?`<span class="nego-sub"> − ${fmt(nego)}원</span>`:''}</div></div>
-    <div class="scard"><div class="slabel">부가세 10%</div><div class="sval">${fmt(vatAfterNego)}원</div></div>
-    <div class="scard"><div class="slabel">합계 (VAT 포함)</div><div class="sval hi">${fmt(totalAfterNego)}원</div></div>
-    <div class="scard"><div class="slabel">평당 단가</div><div class="sval">${py>0?fmt(perPyAfter)+'원':'-'}</div></div>`;
+    <div class="scard">
+      <div class="slabel">소계 (VAT 제외)</div>
+      <div class="sval">${subCardInner}</div>
+    </div>
+    <div class="scard">
+      <div class="slabel">부가세 10%</div>
+      <div class="sval">${fmt(vatAfterNego)}원</div>
+    </div>
+    <div class="scard">
+      <div class="slabel">합계 (VAT 포함)</div>
+      <div class="sval hi">${fmt(totalAfterNego)}원</div>
+    </div>
+    <div class="scard">
+      <div class="slabel">평당 단가</div>
+      <div class="sval">${py>0?fmt(perPyAfter)+'원':'-'}</div>
+    </div>`;
 
   const entries = Object.entries(catMap).filter(([,v])=>v>0);
-  document.getElementById('srows').innerHTML = !entries.length
-    ? '<p class="empty">항목을 선택하면 견적이 표시됩니다.</p>'
-    : entries.map(([k,v]) => `<div class="srow"><span class="lbl">${k}</span><span class="val">${fmt(v)}원</span></div>`).join('')
-      + (nego > 0 ? `<div class="srow nego-row"><span class="lbl">네고 / 할인</span><span class="val nego-val">− ${fmt(nego)}원</span></div>` : '')
-      + `<div class="srow tot"><span class="lbl">최종 합계</span><span class="val">${fmt(subAfterNego)}원</span></div>`;
+  if (!entries.length) {
+    document.getElementById('srows').innerHTML = '<p class="empty">항목을 선택하면 견적이 표시됩니다.</p>';
+  } else {
+    const rowsHtml = entries.map(([k,v]) =>
+      `<div class="srow"><span class="lbl">${k}</span><span class="val">${fmt(v)}원</span></div>`
+    ).join('');
+    const negoHtml = nego > 0
+      ? `<div class="srow nego-row"><span class="lbl">🔻 네고 / 할인</span><span class="val nego-val">− ${fmt(nego)}원</span></div>`
+      : '';
+    const totHtml = `<div class="srow tot"><span class="lbl">최종 합계</span><span class="val" style="color:var(--info-tx)">${fmt(subAfterNego)}원</span></div>`;
+    document.getElementById('srows').innerHTML = rowsHtml + negoHtml + totHtml;
+  }
 
   renderQuoteDoc({ sub, vat, total, catMap, rows, nego, subAfterNego, vatAfterNego, totalAfterNego });
 }
