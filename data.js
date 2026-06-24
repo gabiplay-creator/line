@@ -50,7 +50,7 @@ const DATA = {
     { id:"plm_drain1", n:"우수관 방수",     d:"개당 250,000원 (교체와 동시 선택 시 세트 500,000원)", type:"stepper",u:"개", p:250000 },
     { id:"plm_drain2", n:"우수관 교체",     d:"개당 350,000원 (방수와 동시 선택 시 세트 500,000원)", type:"stepper",u:"개", p:350000 },
     { id:"plm_living", n:"거실 확장 (단열포함)", d:"2,500,000원",                type:"simple", u:"식", p:2500000 },
-    { id:"plm_room",   n:"방 확장 (단열포함)",   d:"2,000,000원",                type:"simple", u:"식", p:2000000 },
+    { id:"plm_room",   n:"방 확장 (단열포함)",   d:"개당 2,000,000원",           type:"stepper",u:"개", p:2000000 },
     { id:"plm_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
