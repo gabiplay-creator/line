@@ -80,7 +80,15 @@ function renderItem(it) {
   let priceLabel = '';
   if (it.pct) priceLabel = `공사금 ${(it.pct*100).toFixed(0)}% 자동`;
   else if (it.type === 'input') priceLabel = '직접 입력';
-  else if (it.type === 'select-price') priceLabel = it.options.map(o=>o.label).join(' / ');
+  else if (it.type === 'select-price') {
+    // 선택 전: 옵션 수만 표시 / 선택 후: 선택된 항목 금액 표시
+    if (!isOn) {
+      priceLabel = `${it.options.length - 1}가지 선택`;
+    } else {
+      const sel_opt = it.options[s.selectIdx];
+      priceLabel = sel_opt?.p ? `+${fmt(sel_opt.p)}원` : '선택 안함';
+    }
+  }
   else priceLabel = `${fmt(it.p)}원/${it.u}`;
 
   let controlHtml = '';
@@ -111,7 +119,7 @@ function renderItem(it) {
       <div class="chk">${isOn?'✓':''}</div>
       <div class="iinfo">
         <div class="iname">${it.n}${pytag}</div>
-        <div class="idesc">${it.d}</div>
+        <div class="idesc">${it.type === 'select-price' && !isOn ? it.options.filter(o=>o.p>0).map(o=>o.label+' '+Math.round(o.p).toLocaleString()+'원').join(' · ') : it.d}</div>
       </div>
       <div class="iright">
         <div class="iprice">${priceLabel}</div>
