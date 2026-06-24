@@ -18,7 +18,10 @@ const catExtraState = {};
 function initSel() {
   Object.values(DATA).forEach(cat =>
     cat.items.forEach(it => {
-      if (!sel[it.id]) sel[it.id] = { on: false, q: 1, val: 0, selectIdx: 0 };
+      // bath-demo/water/rooms/cat-extra 는 항상 on=true (별도 상태로 관리)
+      const alwaysOn = ['bath-demo','bath-water','bath-rooms','cat-extra'].includes(it.type);
+      if (!sel[it.id]) sel[it.id] = { on: alwaysOn, q: 1, val: 0, selectIdx: 0 };
+      else if (alwaysOn) sel[it.id].on = true;
       if (it.type === 'cat-extra' && !catExtraState[it.id]) {
         catExtraState[it.id] = { text:'', amt:0, nego:0 };
       }
@@ -675,8 +678,14 @@ function bindItemEvents() {
 
 function togItem(id) {
   const it = findItem(id);
-  // cat-extra 는 클릭해도 토글 안 함 (항상 표시)
+  // cat-extra / bath-demo / bath-water / bath-rooms 는 별도 상태로 관리 → s.on=true 고정
   if (it?.type === 'cat-extra') return;
+  if (it?.type === 'bath-demo' || it?.type === 'bath-water' || it?.type === 'bath-rooms') {
+    // s.on을 true로 고정해서 calcTotals의 s.on 체크를 통과하게 함
+    sel[it.id].on = true;
+    renderItems(); calc();
+    return;
+  }
   const s = sel[id]; s.on = !s.on;
   if (s.on) {
     s.q = (it?.pyAuto) ? Math.max(1, Math.round(getPyung())) : 1;
@@ -738,9 +747,7 @@ function calcTotals() {
           });
           const fan = BATH_FAN_OPTS[r.opts.fan];
           if (fan && fan.p > 0) rows.push({ catName, label: `욕실 ${i+1} — ${fan.label}`, detail:'환풍기', qty:1, u:'개', unitP:fan.p, amt:fan.p });
-          amt += a;
         });
-        if (amt > 0) { catMap[catName] = (catMap[catName]||0) + amt; baseSub += amt; }
         return;
       }
 
@@ -762,13 +769,16 @@ function calcTotals() {
           }
           catMap[catName] = (catMap[catName]||0) + a;
           baseSub += a;
-          amt += a;
         });
         return;
       }
 
+      if (!s?.on) return;
+
+      let amt = 0;
+
       if (it.type === 'bath-demo') {
-        // 욕실 철거 계산
+        // 욕실 철거 계산 (s.on 체크 통과 후 처리)
         const BATH_DEMO_P = 800000;
         if (bathDemoState.living) {
           catMap[catName] = (catMap[catName]||0) + BATH_DEMO_P;
@@ -784,10 +794,6 @@ function calcTotals() {
         }
         return;
       }
-
-      if (!s?.on) return;
-
-      let amt = 0;
       let unitP = it.p || 0;
       let detail = it.d;
       let qtyLabel = s.q;
