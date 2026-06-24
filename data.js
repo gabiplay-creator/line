@@ -32,14 +32,8 @@ const DATA = {
       id:"dem_waste", n:"폐기물", d:"평수에 따라 차량 수 자동 계산 (차량당 450,000원)",
       type:"auto-waste", special:true
     },
-    {
-      id:"dem_waste_floor", n:"폐기물 추가 — 스펀지·플라스틱 마루",
-      d:"평당 7,000원 (장판 등)", type:"pyung-unit", u:"평", p:7000
-    },
-    {
-      id:"dem_waste_wood", n:"폐기물 추가 — 원목마루",
-      d:"평당 5,000원", type:"pyung-unit", u:"평", p:5000
-    },
+
+    { id:"dem_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
   ]},
 
   /* ════════════════════════════════
@@ -52,6 +46,7 @@ const DATA = {
     { id:"plm_drain2", n:"우수관 교체",     d:"개당 750,000원",                   type:"stepper",u:"개", p:750000 },
     { id:"plm_living", n:"거실 확장 (단열포함)", d:"2,500,000원",                type:"simple", u:"식", p:2500000 },
     { id:"plm_room",   n:"방 확장 (단열포함)",   d:"2,000,000원",                type:"simple", u:"식", p:2000000 },
+    { id:"plm_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
   ]},
 
   /* ════════════════════════════════
@@ -91,6 +86,7 @@ const DATA = {
     { id:"door_opt_gansal",  n:"옵션 — 간살",   d:"400,000원", type:"simple", u:"식", p:400000 },
     { id:"door_opt_damper",  n:"옵션 — 댐퍼",   d:"130,000원", type:"simple", u:"식", p:130000 },
     { id:"door_opt_labor",   n:"옵션 — 인건비", d:"금액 직접 입력", type:"input", u:"원" },
+    { id:"door_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
   ]},
 
   /* ════════════════════════════════
@@ -118,6 +114,7 @@ const DATA = {
       ]
     },
     { id:"carp_young_mat", n:"영림 옵션 — 매트", d:"선택 시 문 금액의 40% 추가", type:"mat-option", special:true },
+    { id:"carp_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
   ]},
 
   /* ════════════════════════════════
@@ -125,6 +122,7 @@ const DATA = {
   ════════════════════════════════ */
   "욕실": { items: [
     { id:"bath_rooms", n:"욕실 수 선택", d:"욕실 갯수를 먼저 선택하세요", type:"bath-rooms", special:true },
+    { id:"bath_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
   ]},
 
   /* ════════════════════════════════
@@ -134,6 +132,7 @@ const DATA = {
     { id:"tile_enter", n:"현관 (600×600)",  d:"250,000원",              type:"simple",  u:"식", p:250000 },
     { id:"tile_balc",  n:"발코니 (300×300)",d:"1EA당 200,000원",        type:"stepper", u:"EA", p:200000 },
     { id:"tile_kitchen",n:"주방벽 (600×600)",d:"350,000원",             type:"simple",  u:"식", p:350000 },
+    { id:"tile_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
   ]},
 
   /* ════════════════════════════════
@@ -146,6 +145,7 @@ const DATA = {
     { id:"wall_42", n:"42평 (9품)",  d:"2,700,000원", type:"simple", u:"식", p:2700000 },
     { id:"wall_48", n:"48평 (10품)", d:"3,000,000원", type:"simple", u:"식", p:3000000 },
     { id:"wall_add", n:"품 추가",    d:"1품당 300,000원", type:"stepper", u:"품", p:300000 },
+    { id:"wall_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
   ]},
 
   /* ════════════════════════════════
@@ -162,6 +162,7 @@ const DATA = {
     { id:"w8",  n:"KCC HWONE 225공틀단창",    d:"삼성/두산 48평형 TPS 단열/22T 로이",  u:"개", p:950000,  type:"stepper" },
     { id:"w9",  n:"창호 철거비 (30평형)",     d:"기존 창호 철거 및 폐기물 처리",        u:"식", p:400000,  type:"simple"  },
     { id:"w10", n:"양중비",                   d:"자재 운반 양중비용",                    u:"식", p:200000,  type:"simple"  },
+    { id:"win_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
   ]},
 
   /* ════════════════════════════════
@@ -185,6 +186,7 @@ const DATA = {
     { id:"f15", n:"동화 나투스 진 시공포함",d:"시공포함",               u:"평", p:120000, type:"pyung-unit", pyAuto:true },
     { id:"f16", n:"강화마루 클릭",        d:"동화 강화마루",            u:"평", p:85000,  type:"pyung-unit", pyAuto:true },
     { id:"f19", n:"기본 시공비",          d:"기본 진입비용 (10평 기준)",u:"식", p:250000, type:"simple" },
+    { id:"floor_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
   ]},
 
   /* ════════════════════════════════
@@ -212,6 +214,7 @@ const DATA = {
     { id:"s3", n:"방범창 1200×2100 거실",    d:"고구려시스템", u:"개", p:467000, type:"stepper" },
     { id:"s4", n:"방범창 900×2200 다용도실", d:"고구려시스템", u:"개", p:426000, type:"stepper" },
     { id:"s5", n:"방범창 주방 600×500",      d:"고구려시스템", u:"개", p:205000, type:"stepper" },
+    { id:"sec_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
   ]},
 
   /* ════════════════════════════════
@@ -228,6 +231,7 @@ const DATA = {
     { id:"e8",  n:"인덕션 라인 신설",         d:"라인+콘센트 2구",        u:"식",   p:200000,  type:"simple"  },
     { id:"e9",  n:"3인치 주백 LED",           d:"매입등 시공비 포함",     u:"개",   p:4500,    type:"stepper" },
     { id:"e10", n:"T5 1200 주백",             d:"형광등 교체",            u:"개",   p:6500,    type:"stepper" },
+    { id:"elec_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
   ]},
 
   /* ════════════════════════════════
@@ -244,6 +248,7 @@ const DATA = {
     { id:"fu8",  n:"싱크대 배관 철거",      d:"기존 배관 철거",        u:"식",   p:150000,  type:"simple" },
     { id:"fu9",  n:"실리콘 마감 전체",      d:"집 전체 실리콘 마감",   u:"식",   p:350000,  type:"simple" },
     { id:"fu10", n:"탄성코트 발코니",       d:"프리미엄 탄성코팅",     u:"개소", p:450000,  type:"stepper"},
+    { id:"furn_extra", n:"기타 (직접 입력)", d:"수기 금액 입력 — 견적에 합산", type:"input", u:"원" },
   ]},
 
   /* ════════════════════════════════
@@ -255,21 +260,15 @@ const DATA = {
     { id:"etc3", n:"입주청소",                   d:"기본 입주청소",           u:"식", p:300000,  type:"simple"  },
     { id:"etc4", n:"공사신고+보양비",            d:"승강기 사용료+보양비",    u:"식", p:300000,  type:"simple"  },
     { id:"etc5", n:"기타 (직접 입력)",           d:"수기 금액 입력",          u:"원", type:"input" },
+    { id:"etc_nego", n:"네고 / 할인", d:"마이너스(-) 금액 입력 — 총액에서 차감", type:"nego", special:true },
   ]},
 };
 
 /* 마루 철거 세부 단가 (floor-demo 전용) */
 const FLOOR_DEMO_TYPES = [
-  { id:"fd_sand_floor",   n:"마루 철거 후 마루샌딩",  p:25000 },
-  { id:"fd_sand_jangpan", n:"장판 샌딩",              p:28000 },
-  { id:"fd_step",         n:"방 단차 샌딩",            p:10000, u:"개소" },
-  { id:"fd_threshold",    n:"방문턱",                  p:20000, u:"개당" },
+  { id:"fd_ganghwa_only", n:"강마루 철거",             p:25000 },
+  { id:"fd_ganghwa_sand", n:"강마루 철거 후 샌딩",     p:28000 },
   { id:"fd_ganghwa",      n:"강화마루 철거",           p:18000 },
   { id:"fd_deco",         n:"데코타일 철거",           p:20000 },
-  { id:"fd_asta",         n:"아스타일 철거",           p:22000 },
-  { id:"fd_uretan",       n:"우레탄 옥상",             p:55000 },
-  { id:"fd_maekban",      n:"맥반석",                  p:45000 },
-  { id:"fd_sb",           n:"SB·진·순마루 철거",       p:55000 },
   { id:"fd_polish",       n:"폴리싱타일 철거",         p:65000 },
-  { id:"fd_normal",       n:"일반 샌딩",               p:10000 },
 ];
