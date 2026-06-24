@@ -714,9 +714,7 @@ function calcTotals() {
 function calc() {
   const py = getPyung();
   document.getElementById('sqm').textContent = `(약 ${Math.round(py*3.3)}㎡)`;
-  const { sub, vat, total, catMap, rows } = calcTotals();
-  const perPy = py > 0 ? Math.round(sub/py) : 0;
-
+  const { sub, vat, total, catMap, rows, nego, subAfterNego, vatAfterNego, totalAfterNego } = calcTotals();
   const perPyAfter = py > 0 ? Math.round(subAfterNego/py) : 0;
   document.getElementById('scards').innerHTML = `
     <div class="scard"><div class="slabel">소계 (VAT 제외)</div><div class="sval">${fmt(sub)}원${nego>0?`<span class="nego-sub"> − ${fmt(nego)}원</span>`:''}</div></div>
@@ -731,7 +729,7 @@ function calc() {
       + (nego > 0 ? `<div class="srow nego-row"><span class="lbl">네고 / 할인</span><span class="val nego-val">− ${fmt(nego)}원</span></div>` : '')
       + `<div class="srow tot"><span class="lbl">최종 합계</span><span class="val">${fmt(subAfterNego)}원</span></div>`;
 
-  renderQuoteDoc({ sub, vat, total, catMap, rows });
+  renderQuoteDoc({ sub, vat, total, catMap, rows, nego, subAfterNego, vatAfterNego, totalAfterNego });
 }
 
 /* ════════ 견적서 렌더 ════════ */
