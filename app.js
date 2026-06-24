@@ -90,7 +90,7 @@ function renderItem(it) {
   const isOn = s.on;
 
   if (it.type === 'floor-demo') return renderFloorDemo(it, isOn);
-  if (it.type === 'mat-option') return renderMatOption(it, isOn);
+
   if (it.type === 'bath-rooms') return renderBathRooms(it);
   if (it.type === 'auto-labor') return renderAutoLabor(it, isOn);
   if (it.type === 'auto-waste') return renderAutoWaste(it, isOn);
@@ -189,20 +189,8 @@ function renderFloorDemo(it, isOn) {
     </div>`;
 }
 
-/* 영림 매트 옵션 특수 렌더 */
-function renderMatOption(it, isOn) {
-  const matBase = calcYoungDoorBase();
-  const addAmt = Math.round(matBase * 0.4);
-  return `
-    <div class="item${isOn?' sel':''}" data-id="${it.id}">
-      <div class="chk">${isOn?'✓':''}</div>
-      <div class="iinfo">
-        <div class="iname">${it.n}</div>
-        <div class="idesc">영림 더도어/오리지날 금액 합계의 40% 추가 (현재: ${fmtW(addAmt)})</div>
-      </div>
-      <div class="iright"><div class="iprice">${fmtW(addAmt)}</div></div>
-    </div>`;
-}
+// renderMatOption 제거됨
+
 
 /* 욕실 수 + 타입 + 옵션 통합 렌더 */
 const BATH_TYPES = [
@@ -400,8 +388,10 @@ function setCatExtraNego(id, v) {
 
 /* ════════ 섹션 구분선 ════════ */
 function renderDivider(it) {
+  // data.js에서 label 필드로 구분선 텍스트 커스텀 가능
+  const label = it.label || '추가 옵션';
   return `<div class="items-divider" data-id="${it.id}">
-    <span class="items-divider-label">추가 옵션</span>
+    <span class="items-divider-label">${label}</span>
   </div>`;
 }
 
@@ -665,14 +655,8 @@ function adjAutoWaste(d) {
   renderItems(); calc();
 }
 
-function calcYoungDoorBase() {
-  let base = 0;
-  ['carp_young_door','carp_young_orig'].forEach(id => {
-    const it = findItem(id); const s = sel[id];
-    if (it && s?.on) base += it.p * s.q;
-  });
-  return base;
-}
+// calcYoungDoorBase 제거됨 (매트 옵션 삭제)
+
 
 /* ════════ 이벤트 바인딩 ════════ */
 function bindItemEvents() {
@@ -856,11 +840,6 @@ function calcTotals() {
         qtyLabel = 1;
       } else if (it.type === 'input') {
         amt = s.val || 0;
-        if (!amt) return;
-        unitP = amt;
-        qtyLabel = 1;
-      } else if (it.type === 'mat-option') {
-        amt = Math.round(calcYoungDoorBase() * 0.4);
         if (!amt) return;
         unitP = amt;
         qtyLabel = 1;

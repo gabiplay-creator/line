@@ -102,25 +102,20 @@ const DATA = {
   "목공": { items: [
     // 인건비
     { id:"carp_labor", n:"인건비", d:"1품당 350,000원 — 품 수 선택", type:"stepper", u:"품", p:350000 },
+    // 구분선
+    { id:"carp_divider1", n:"", d:"", type:"divider", label:"예림 / 영림 더도어" },
     // 예림 문
-    { id:"carp_yerim_door",  n:"예림 — 문만 (크림화이트)", d:"99,000원/개", type:"stepper", u:"개", p:99000 },
-    { id:"carp_yerim_set",   n:"예림 — 세트 (크림화이트)", d:"225,000원/세트", type:"stepper", u:"세트", p:225000 },
-    { id:"carp_yerim_punch", n:"예림 — 타공문",             d:"300,000원/개",   type:"stepper", u:"개", p:300000 },
-    { id:"carp_yerim_custom",n:"예림 — 그외 색상",          d:"금액 직접 입력", type:"input", u:"원" },
-    // 영림 문
-    { id:"carp_young_door",  n:"영림 더도어",       d:"97,000원/개",  type:"stepper", u:"개", p:97000 },
-    { id:"carp_young_orig",  n:"영림 오리지날 민자", d:"125,000원/개", type:"stepper", u:"개", p:125000 },
-    // 영림 옵션
-    {
-      id:"carp_young_hp", n:"영림 옵션 — HP", d:"1.8만 / 2.8만 선택",
-      type:"select-price",
-      options:[
-        {label:"선택 안함", p:0},
-        {label:"HP 1.8만",  p:18000},
-        {label:"HP 2.8만",  p:28000},
-      ]
-    },
-    { id:"carp_young_mat", n:"영림 옵션 — 매트", d:"선택 시 문 금액의 40% 추가", type:"mat-option", special:true },
+    { id:"carp_yerim_door",  n:"예림 — 문만 (크림화이트)", d:"250,000원/개",   type:"stepper", u:"개", p:250000 },
+    { id:"carp_yerim_set",   n:"예림 — 세트 (문+문틀 12mm)", d:"450,000원/세트", type:"stepper", u:"세트", p:450000 },
+    // 영림 더도어
+    { id:"carp_young_door",  n:"영림 더도어 — 문만",  d:"250,000원/개",   type:"stepper", u:"개", p:250000 },
+    { id:"carp_young_set",   n:"영림 더도어 — 세트",  d:"450,000원/세트", type:"stepper", u:"세트", p:450000 },
+    // 구분선
+    { id:"carp_divider2", n:"", d:"", type:"divider", label:"추가 옵션" },
+    // 옵션
+    { id:"carp_yerim_punch", n:"타공문",      d:"300,000원/개",   type:"stepper", u:"개", p:300000 },
+    { id:"carp_yerim_custom",n:"그외 색상",   d:"20,000원/개",    type:"stepper", u:"개", p:20000  },
+    { id:"carp_young_hp",    n:"HP",          d:"30,000원/개",    type:"stepper", u:"개", p:30000  },
     { id:"carp_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
