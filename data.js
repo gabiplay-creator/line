@@ -102,20 +102,23 @@ const DATA = {
   "목공": { items: [
     // 인건비
     { id:"carp_labor", n:"인건비", d:"1품당 350,000원 — 품 수 선택", type:"stepper", u:"품", p:350000 },
-    // 구분선
+
+    // ── 예림 / 영림 더도어 ──
     { id:"carp_divider1", n:"", d:"", type:"divider", label:"예림 / 영림 더도어" },
-    // 예림 문
-    { id:"carp_yerim_door",  n:"예림 — 문만 (크림화이트)", d:"250,000원/개",   type:"stepper", u:"개", p:250000 },
-    { id:"carp_yerim_set",   n:"예림 — 세트 (문+문틀 12mm)", d:"450,000원/세트", type:"stepper", u:"세트", p:450000 },
-    // 영림 더도어
-    { id:"carp_young_door",  n:"영림 더도어 — 문만",  d:"250,000원/개",   type:"stepper", u:"개", p:250000 },
-    { id:"carp_young_set",   n:"영림 더도어 — 세트",  d:"450,000원/세트", type:"stepper", u:"세트", p:450000 },
-    // 구분선
+    { id:"carp_door_only", n:"문만",              d:"250,000원/개",   type:"stepper", u:"개",  p:250000 },
+    { id:"carp_door_set",  n:"세트 (문+문틀 12mm)", d:"450,000원/세트", type:"stepper", u:"세트", p:450000 },
+
+    // ── 추가 옵션 ──
     { id:"carp_divider2", n:"", d:"", type:"divider", label:"추가 옵션" },
-    // 옵션
-    { id:"carp_yerim_punch", n:"타공문",      d:"300,000원/개",   type:"stepper", u:"개", p:300000 },
-    { id:"carp_yerim_custom",n:"그외 색상",   d:"20,000원/개",    type:"stepper", u:"개", p:20000  },
-    { id:"carp_young_hp",    n:"HP",          d:"30,000원/개",    type:"stepper", u:"개", p:30000  },
+    { id:"carp_yerim_punch", n:"타공문",   d:"300,000원/개", type:"stepper", u:"개", p:300000 },
+    { id:"carp_yerim_custom",n:"그외 색상", d:"20,000원/개",  type:"stepper", u:"개", p:20000  },
+    { id:"carp_young_hp",    n:"HP",       d:"30,000원/개",  type:"stepper", u:"개", p:30000  },
+
+    // ── 목공 작업 ──
+    { id:"carp_divider3", n:"", d:"", type:"divider", label:"목공 작업" },
+    { id:"carp_artwall",  n:"아트월 (반매립장)", d:"800,000원",       type:"simple",  u:"식", p:800000 },
+    { id:"carp_insul",    n:"단열",              d:"1면당 300,000원", type:"stepper", u:"면", p:300000 },
+
     { id:"carp_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
