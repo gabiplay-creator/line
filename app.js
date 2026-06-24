@@ -181,33 +181,84 @@ function renderMatOption(it, isOn) {
     </div>`;
 }
 
-/* 욕실 수 + 타입 선택 렌더 */
+/* 욕실 수 + 타입 + 옵션 통합 렌더 */
 const BATH_TYPES = [
   { key:'std',  label:'스탠다드형', p:3000000, color:'#4a7c59' },
   { key:'high', label:'고급형',     p:4500000, color:'#185fa5' },
   { key:'prem', label:'프리미엄형', p:5500000, color:'#7b3fa0' },
 ];
 
+const BATH_OPTS = [
+  { key:'faucet', label:'수전금구 업그레이드', p:300000 },
+  { key:'shower', label:'해바라기 수전',       p:150000 },
+  { key:'zendai', label:'젠다이',              p:150000 },
+  { key:'mirror', label:'수납장 거울형',       p:200000 },
+  { key:'size',   label:'사이즈 추가',         p:150000 },
+  { key:'elec',   label:'전기 추가',           p:100000 },
+  { key:'tub',    label:'욕조',                p:200000 },
+  { key:'spray',  label:'스프레이건',          p:50000  },
+];
+const BATH_FAN_OPTS = [
+  { label:'환풍기 기본', p:0 },
+  { label:'휴젠뜨',      p:300000 },
+  { label:'휴젠뜨 노바', p:350000 },
+  { label:'휴젠뜨 팔레트', p:450000 },
+];
+
+function calcBathRoomAmt(r) {
+  const BPRICES = { std:3000000, high:4500000, prem:5500000 };
+  let a = BPRICES[r.type] || 0;
+  BATH_OPTS.forEach(o => { if (r.opts[o.key]) a += o.p; });
+  a += (BATH_FAN_OPTS[r.opts.fan] || {p:0}).p;
+  return a;
+}
+
 function renderBathRooms(it) {
   const count = bathRooms.length;
-  const PRICES = { std:3000000, high:4500000, prem:5500000 };
-  const total  = bathRooms.reduce((s,r) => s + (PRICES[r.type]||0), 0);
+  const total = bathRooms.reduce((s,r) => s + calcBathRoomAmt(r), 0);
 
-  // 욕실 타입 선택 카드들
   let roomCards = '';
   for (let i = 0; i < count; i++) {
     const r = bathRooms[i];
-    roomCards += `<div class="bath-room-card">
-      <div class="bath-room-label">${i+1}번째 욕실</div>
-      <div class="bath-type-btns">
-        ${BATH_TYPES.map(t => `
-          <button class="bath-type-btn${r.type===t.key?' active':''}"
-            style="${r.type===t.key?'background:'+t.color+';color:#fff;border-color:'+t.color:''}"
-            onclick="event.stopPropagation();setBathType(${i},'${t.key}')">
-            ${t.label}<br><span class="bath-type-price">${fmt(t.p)}원</span>
-          </button>`).join('')}
-      </div>
-    </div>`;
+    const roomAmt = calcBathRoomAmt(r);
+
+    // 타입 버튼
+    const typeBtns = BATH_TYPES.map(t => `
+      <button class="bath-type-btn${r.type===t.key?' active':''}"
+        style="${r.type===t.key?'background:'+t.color+';color:#fff;border-color:'+t.color:''}"
+        onclick="event.stopPropagation();setBathType(${i},'${t.key}')">
+        ${t.label}<br><span class="bath-type-price">${fmt(t.p)}원</span>
+      </button>`).join('');
+
+    // 추가 옵션 체크
+    const optChecks = BATH_OPTS.map(o => `
+      <label class="bath-opt-item${r.opts[o.key]?' on':''}" onclick="event.stopPropagation();toggleBathOpt(${i},'${o.key}')">
+        <span class="bath-opt-chk">${r.opts[o.key]?'✓':''}</span>
+        <span class="bath-opt-label">${o.label}</span>
+        <span class="bath-opt-price">+${fmt(o.p)}</span>
+      </label>`).join('');
+
+    // 환풍기 셀렉트
+    const fanOpts = BATH_FAN_OPTS.map((f,fi) =>
+      `<option value="${fi}" ${r.opts.fan===fi?'selected':''}>` +
+      `${f.label}${f.p?` (+${fmt(f.p)}원)`:''}</option>`
+    ).join('');
+
+    roomCards += `
+      <div class="bath-room-card">
+        <div class="bath-room-header">
+          <span class="bath-room-label">${i+1}번째 욕실</span>
+          <span class="bath-room-amt">${fmtW(roomAmt)}</span>
+        </div>
+        <div class="bath-type-btns">${typeBtns}</div>
+        <div class="bath-opts-grid">${optChecks}</div>
+        <div class="bath-fan-row">
+          <span class="bath-opt-label" style="white-space:nowrap">환풍기</span>
+          <select class="sel-input" style="flex:1"
+            onclick="event.stopPropagation()"
+            onchange="event.stopPropagation();setBathFan(${i},this.value)">${fanOpts}</select>
+        </div>
+      </div>`;
   }
 
   return `
@@ -216,7 +267,7 @@ function renderBathRooms(it) {
         <div class="bath-header">
           <div>
             <div class="iname">욕실 수 선택</div>
-            <div class="idesc">욕실 수를 먼저 선택 후 각각 타입을 지정하세요</div>
+            <div class="idesc">욕실 수를 선택 후 각각 타입과 옵션을 지정하세요</div>
           </div>
           <div class="bath-counter">
             <button class="qbtn" onclick="adjBathCount(-1)">−</button>
@@ -233,13 +284,22 @@ function renderBathRooms(it) {
 
 function adjBathCount(d) {
   const newCount = Math.max(0, bathRooms.length + d);
-  while (bathRooms.length < newCount) bathRooms.push({ type: 'std' });
+  while (bathRooms.length < newCount) bathRooms.push({
+    type: 'std',
+    opts: { faucet:false, shower:false, zendai:false, mirror:false, size:false, elec:false, tub:false, spray:false, fan:0 }
+  });
   while (bathRooms.length > newCount) bathRooms.pop();
   renderItems(); calc();
 }
 
 function setBathType(idx, type) {
   if (bathRooms[idx]) { bathRooms[idx].type = type; renderItems(); calc(); }
+}
+function toggleBathOpt(idx, key) {
+  if (bathRooms[idx]) { bathRooms[idx].opts[key] = !bathRooms[idx].opts[key]; renderItems(); calc(); }
+}
+function setBathFan(idx, val) {
+  if (bathRooms[idx]) { bathRooms[idx].opts.fan = parseInt(val)||0; calc(); }
 }
 
 function calcYoungDoorBase() {
@@ -296,13 +356,22 @@ function calcTotals() {
       let qtyLabel = s.q;
 
       if (it.type === 'bath-rooms') {
-        // 욕실 수+타입 계산
-        const BPRICES = { std:3000000, high:4500000, prem:5500000 };
+        // 욕실별 타입 + 옵션 계산
         const BLABELS = { std:'스탠다드형', high:'고급형', prem:'프리미엄형' };
         bathRooms.forEach((r, i) => {
-          const a = BPRICES[r.type] || 0;
+          const a = calcBathRoomAmt(r);
+          if (!a) return;
+          // 타입 기본 금액
+          const BPRICES = { std:3000000, high:4500000, prem:5500000 };
+          const baseA = BPRICES[r.type] || 0;
+          rows.push({ catName, label: `욕실 ${i+1} — ${BLABELS[r.type]}`, detail:'기본', qty:1, u:'실', unitP:baseA, amt:baseA });
+          // 선택된 옵션들
+          BATH_OPTS.forEach(o => {
+            if (r.opts[o.key]) rows.push({ catName, label: `욕실 ${i+1} — ${o.label}`, detail:'', qty:1, u:'개', unitP:o.p, amt:o.p });
+          });
+          const fan = BATH_FAN_OPTS[r.opts.fan];
+          if (fan && fan.p > 0) rows.push({ catName, label: `욕실 ${i+1} — ${fan.label}`, detail:'환풍기', qty:1, u:'개', unitP:fan.p, amt:fan.p });
           amt += a;
-          rows.push({ catName, label: `욕실 ${i+1} — ${BLABELS[r.type]}`, detail:'', qty:1, u:'실', unitP:a, amt:a });
         });
         if (amt > 0) catMap[catName] = (catMap[catName]||0) + amt;
         baseSub += amt;

@@ -121,29 +121,10 @@ const DATA = {
   ]},
 
   /* ════════════════════════════════
-     5. 욕실
+     5. 욕실 — 욕실별 타입+옵션 통합
   ════════════════════════════════ */
   "욕실": { items: [
     { id:"bath_rooms", n:"욕실 수 선택", d:"욕실 갯수를 먼저 선택하세요", type:"bath-rooms", special:true },
-    // 추가 옵션
-    { id:"bath_faucet",   n:"수전금구 업그레이드", d:"30만/개",  type:"stepper", u:"개", p:300000 },
-    { id:"bath_shower",   n:"해바라기 수전 추가",  d:"15만/개",  type:"stepper", u:"개", p:150000 },
-    { id:"bath_zendai",   n:"젠다이 추가",          d:"15만/개",  type:"stepper", u:"개", p:150000 },
-    { id:"bath_mirror",   n:"수납장 거울형 업그레이드", d:"20만", type:"simple",  u:"개", p:200000 },
-    { id:"bath_size",     n:"사이즈 추가",          d:"15만/개",  type:"stepper", u:"개", p:150000 },
-    { id:"bath_elec",     n:"전기 추가",            d:"10만/개",  type:"stepper", u:"개", p:100000 },
-    { id:"bath_tub",      n:"욕조",                 d:"20만/개",  type:"stepper", u:"개", p:200000 },
-    { id:"bath_spray",    n:"스프레이건",           d:"5만/개",   type:"stepper", u:"개", p:50000  },
-    {
-      id:"bath_fan", n:"환풍기 업그레이드", d:"휴젠뜨 30만 / 노바 35만 / 팔레트 45만",
-      type:"select-price",
-      options:[
-        {label:"선택 안함",         p:0},
-        {label:"휴젠뜨 (30만)",     p:300000},
-        {label:"휴젠뜨 노바 (35만)",p:350000},
-        {label:"휴젠뜨 팔레트 (45만)", p:450000},
-      ]
-    },
   ]},
 
   /* ════════════════════════════════

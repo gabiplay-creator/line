@@ -219,3 +219,28 @@ h1 { font-size:22px; font-weight:500; margin-bottom:4px; }
 .bath-type-btn:hover { border-color:var(--tx2); }
 .bath-type-btn.active { font-weight:700; }
 .bath-type-price { font-size:10px; font-weight:400; opacity:.85; }
+
+/* ════════ 욕실 카드 옵션 ════════ */
+.bath-room-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.bath-room-amt { font-size:12px; font-weight:700; color:var(--info-tx); background:var(--info-bg); padding:2px 8px; border-radius:var(--r-pill); }
+
+.bath-opts-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:4px; margin:8px 0; }
+.bath-opt-item {
+  display:flex; align-items:center; gap:5px;
+  padding:4px 7px; border-radius:var(--r-sm);
+  border:0.5px solid var(--bd); background:var(--bg);
+  cursor:pointer; user-select:none; transition:all .15s;
+}
+.bath-opt-item:hover { border-color:var(--bd2); }
+.bath-opt-item.on { border-color:var(--accent); background:var(--bg2); }
+.bath-opt-chk {
+  width:14px; height:14px; border:1.5px solid var(--bd2); border-radius:3px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:9px; flex-shrink:0;
+}
+.bath-opt-item.on .bath-opt-chk { background:var(--accent); border-color:var(--accent); color:var(--accent-t); }
+.bath-opt-label { font-size:10px; color:var(--tx); flex:1; line-height:1.3; }
+.bath-opt-price { font-size:10px; color:var(--tx3); white-space:nowrap; }
+
+.bath-fan-row { display:flex; align-items:center; gap:8px; margin-top:4px; }
+.bath-fan-row .bath-opt-label { font-size:11px; font-weight:500; color:var(--tx2); }
