@@ -10,6 +10,8 @@ let bathRooms = []; // 길이 = 욕실 수
 let negoAmt = 0;    // 네고(할인) 금액 — 항상 양수로 저장, 총액에서 차감
 // 화장실 방수: [ { type: '1st'|'2nd', count: 1 }, ... ] — 개소별
 let bathWaterList = [];
+// 욕실 철거: { living: false, master: false } — 거실/안방 각각
+let bathDemoState = { living: false, master: false };
 // 카테고리별 기타/네고: { [id]: { text:'', amt:0, nego:0 } }
 const catExtraState = {};
 
@@ -91,6 +93,7 @@ function renderItem(it) {
   if (it.type === 'auto-waste') return renderAutoWaste(it, isOn);
   if (it.type === 'nego') return renderNego(it);
   if (it.type === 'bath-water') return renderBathWater(it);
+  if (it.type === 'bath-demo') return renderBathDemo(it);
   if (it.type === 'cat-extra') return renderCatExtra(it);
 
   let priceLabel = '';
@@ -391,33 +394,93 @@ function setCatExtraNego(id, v) {
   calc();
 }
 
+/* ════════ 욕실 철거 렌더 ════════ */
+function renderBathDemo(it) {
+  const total = (bathDemoState.living ? 800000 : 0) + (bathDemoState.master ? 800000 : 0);
+  return `
+    <div class="item item-wide bath-rooms-item" onclick="event.stopPropagation()">
+      <div class="iinfo" style="flex:1">
+        <div class="bath-header">
+          <div>
+            <div class="iname">욕실 철거</div>
+            <div class="idesc">개소당 800,000원 · 거실/안방 각각 선택</div>
+          </div>
+          ${total > 0 ? `<span class="bath-total-badge">${fmtW(total)}</span>` : ''}
+        </div>
+        <div class="bath-demo-grid" onclick="event.stopPropagation()">
+          <div class="bath-demo-card${bathDemoState.living?' active':''}"
+            onclick="event.stopPropagation();toggleBathDemo('living')">
+            <div class="bath-demo-chk">${bathDemoState.living?'✓':''}</div>
+            <div class="bath-demo-info">
+              <div class="bath-demo-label">1개소 (거실 욕실)</div>
+              <div class="bath-demo-price">800,000원</div>
+            </div>
+          </div>
+          <div class="bath-demo-card${bathDemoState.master?' active':''}"
+            onclick="event.stopPropagation();toggleBathDemo('master')">
+            <div class="bath-demo-chk">${bathDemoState.master?'✓':''}</div>
+            <div class="bath-demo-info">
+              <div class="bath-demo-label">2개소 (안방 욕실)</div>
+              <div class="bath-demo-price">800,000원</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleBathDemo(key) {
+  bathDemoState[key] = !bathDemoState[key];
+  renderItems(); calc();
+}
+
 /* ════════ 화장실 방수 렌더 ════════ */
-const BATH_WATER_TYPES = [
-  { key:'1st', label:'1차 방수',   p:200000, desc:'1차 방수 처리' },
-  { key:'2nd', label:'2~3차 방수', p:200000, desc:'2차 또는 3차 방수 처리' },
-];
+// 욕실 방수: 1차=20만, 2~3차 단독=40만, 동시선택 시 각 20만
+// → 1차만: 20만 / 2~3차만: 40만 / 1차+2~3차: 각20만 (합40만)
+const BATH_WATER_P1 = 200000;   // 1차 방수
+const BATH_WATER_P2_SOLO = 400000; // 2~3차 단독
+const BATH_WATER_P2_COMBO = 200000; // 2~3차 동시 (1차와 함께)
+
+function calcBathWaterAmt(r) {
+  if (r.has1st && r.has2nd) return BATH_WATER_P1 + BATH_WATER_P2_COMBO;
+  if (r.has1st) return BATH_WATER_P1;
+  if (r.has2nd) return BATH_WATER_P2_SOLO;
+  return 0;
+}
 
 function renderBathWater(it) {
   const count = bathWaterList.length;
-  const total = bathWaterList.reduce((s,r) => s + (BATH_WATER_TYPES.find(t=>t.key===r.type)?.p || 0), 0);
+  const total = bathWaterList.reduce((s,r) => s + calcBathWaterAmt(r), 0);
 
   let cards = '';
   for (let i = 0; i < count; i++) {
     const r = bathWaterList[i];
+    const roomAmt = calcBathWaterAmt(r);
+    const roomLabel = i===0?'1개소 (거실 욕실)':i===1?'2개소 (안방 욕실)':`${i+1}번째 개소`;
+
+    // 1차+2~3차 동시선택 여부에 따른 안내
+    const comboNote = (r.has1st && r.has2nd)
+      ? `<span style="font-size:10px;color:var(--info-tx);margin-left:6px">동시선택 할인 적용</span>` : '';
+
     cards += `
       <div class="bath-water-card">
         <div class="bath-room-header">
-          <span class="bath-room-label">${i+1}번째 개소</span>
-          <span class="bath-room-amt">${fmtW(BATH_WATER_TYPES.find(t=>t.key===r.type)?.p||0)}</span>
+          <span class="bath-room-label">${roomLabel}</span>
+          <span class="bath-room-amt">${roomAmt > 0 ? fmtW(roomAmt) : '미선택'}</span>
         </div>
-        <div class="bath-type-btns">
-          ${BATH_WATER_TYPES.map(t => `
-            <button class="bath-type-btn${r.type===t.key?' active':''}"
-              style="${r.type===t.key?'background:#185fa5;color:#fff;border-color:#185fa5':''}"
-              onclick="event.stopPropagation();setBathWaterType(${i},'${t.key}')">
-              ${t.label}<br><span class="bath-type-price">${fmt(t.p)}원</span>
-            </button>`).join('')}
+        <div class="bath-water-opts" onclick="event.stopPropagation()">
+          <label class="bath-water-opt${r.has1st?' on':''}" onclick="event.stopPropagation();toggleBathWater(${i},'1st')">
+            <span class="bath-opt-chk">${r.has1st?'✓':''}</span>
+            <span class="bath-opt-label">1차 방수</span>
+            <span class="bath-opt-price">200,000원</span>
+          </label>
+          <label class="bath-water-opt${r.has2nd?' on':''}" onclick="event.stopPropagation();toggleBathWater(${i},'2nd')">
+            <span class="bath-opt-chk">${r.has2nd?'✓':''}</span>
+            <span class="bath-opt-label">2~3차 방수${r.has1st?'':' (단독 40만)'}</span>
+            <span class="bath-opt-price">${r.has1st?'200,000원':'400,000원'}</span>
+          </label>
         </div>
+        ${comboNote}
       </div>`;
   }
 
@@ -426,8 +489,8 @@ function renderBathWater(it) {
       <div class="iinfo" style="flex:1">
         <div class="bath-header">
           <div>
-            <div class="iname">화장실 방수</div>
-            <div class="idesc">개소 수 선택 후 각각 차수를 지정하세요 · 개소당 200,000원</div>
+            <div class="iname">욕실 방수</div>
+            <div class="idesc">1차 20만 · 2~3차 단독 40만 · 동시선택 각 20만</div>
           </div>
           <div class="bath-counter">
             <button class="qbtn" onclick="adjBathWater(-1)">−</button>
@@ -444,13 +507,16 @@ function renderBathWater(it) {
 
 function adjBathWater(d) {
   const newCount = Math.max(0, bathWaterList.length + d);
-  while (bathWaterList.length < newCount) bathWaterList.push({ type: '1st' });
+  while (bathWaterList.length < newCount) bathWaterList.push({ has1st: false, has2nd: false });
   while (bathWaterList.length > newCount) bathWaterList.pop();
   renderItems(); calc();
 }
 
-function setBathWaterType(idx, type) {
-  if (bathWaterList[idx]) { bathWaterList[idx].type = type; renderItems(); calc(); }
+function toggleBathWater(idx, key) {
+  if (!bathWaterList[idx]) return;
+  if (key === '1st') bathWaterList[idx].has1st = !bathWaterList[idx].has1st;
+  if (key === '2nd') bathWaterList[idx].has2nd = !bathWaterList[idx].has2nd;
+  renderItems(); calc();
 }
 
 /* ════════ 네고 / 할인 렌더 ════════ */
@@ -679,15 +745,43 @@ function calcTotals() {
       }
 
       if (it.type === 'bath-water') {
-        // 화장실 방수 계산 (s.on 체크 불필요 — bathWaterList 배열로 관리)
+        // 욕실 방수 계산
+        const roomNames = ['거실 욕실','안방 욕실'];
         bathWaterList.forEach((r, i) => {
-          const t = BATH_WATER_TYPES.find(t=>t.key===r.type);
-          if (!t) return;
-          catMap[catName] = (catMap[catName]||0) + t.p;
-          baseSub += t.p;
-          rows.push({ catName, label:`화장실 방수 ${i+1}개소 — ${t.label}`, detail:t.desc, qty:1, u:'개소', unitP:t.p, amt:t.p });
-          amt += t.p;
+          const roomLabel = roomNames[i] || `${i+1}개소`;
+          const a = calcBathWaterAmt(r);
+          if (!a) return;
+          if (r.has1st) {
+            const p1 = BATH_WATER_P1;
+            rows.push({ catName, label:`욕실 방수 ${roomLabel} — 1차`, detail:'', qty:1, u:'개소', unitP:p1, amt:p1 });
+          }
+          if (r.has2nd) {
+            const p2 = r.has1st ? BATH_WATER_P2_COMBO : BATH_WATER_P2_SOLO;
+            const desc = r.has1st ? '동시선택 할인' : '단독 선택';
+            rows.push({ catName, label:`욕실 방수 ${roomLabel} — 2~3차`, detail:desc, qty:1, u:'개소', unitP:p2, amt:p2 });
+          }
+          catMap[catName] = (catMap[catName]||0) + a;
+          baseSub += a;
+          amt += a;
         });
+        return;
+      }
+
+      if (it.type === 'bath-demo') {
+        // 욕실 철거 계산
+        const BATH_DEMO_P = 800000;
+        if (bathDemoState.living) {
+          catMap[catName] = (catMap[catName]||0) + BATH_DEMO_P;
+          baseSub += BATH_DEMO_P;
+          rows.push({ catName, label:'욕실 철거 — 거실 욕실', detail:'올철거', qty:1, u:'개소', unitP:BATH_DEMO_P, amt:BATH_DEMO_P });
+          amt += BATH_DEMO_P;
+        }
+        if (bathDemoState.master) {
+          catMap[catName] = (catMap[catName]||0) + BATH_DEMO_P;
+          baseSub += BATH_DEMO_P;
+          rows.push({ catName, label:'욕실 철거 — 안방 욕실', detail:'올철거', qty:1, u:'개소', unitP:BATH_DEMO_P, amt:BATH_DEMO_P });
+          amt += BATH_DEMO_P;
+        }
         return;
       }
 
@@ -1038,6 +1132,7 @@ function resetAll() {
   bathRooms = [];
   negoAmt = 0;
   bathWaterList = [];
+  bathDemoState = { living: false, master: false };
   Object.keys(catExtraState).forEach(id => { catExtraState[id] = { text:'', amt:0, nego:0 }; });
   document.getElementById('nego-input') && (document.getElementById('nego-input').value = '');
   renderItems(); calc();

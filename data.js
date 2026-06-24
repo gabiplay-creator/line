@@ -30,6 +30,10 @@ const DATA = {
       type:"auto-waste", special:true
     },
 
+    {
+      id:"dem_bath_demo", n:"욕실 철거", d:"개소별 80만원 — 거실/안방 각각 선택",
+      type:"bath-demo", special:true
+    },
     { id:"dem_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 
@@ -38,7 +42,7 @@ const DATA = {
   ════════════════════════════════ */
   "설비": { items: [
     {
-      id:"plm_bath_water", n:"화장실 방수", d:"차수 선택 — 개소당 가격",
+      id:"plm_bath_water", n:"욕실 방수", d:"1차 20만 / 2~3차 단독 40만 · 동시선택 시 각 20만",
       type:"bath-water", special:true
     },
     { id:"plm_sink",   n:"싱크대 수도",     d:"싱크대 수도 내림/올림",           type:"simple", u:"식", p:150000 },

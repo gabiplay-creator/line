@@ -455,3 +455,43 @@ h1 { font-size:22px; font-weight:500; margin-bottom:4px; }
 .cat-extra-num:focus { border-color:var(--accent); }
 .cat-extra-num.nego { border-color:#e8aaaa; color:#e05c5c; }
 .cat-extra-num.nego:focus { border-color:#e05c5c; }
+
+/* ════════ 욕실 철거 ════════ */
+.bath-demo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px; margin-top: 8px;
+}
+.bath-demo-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg); border: 1.5px solid var(--bd2);
+  border-radius: var(--r-md); cursor: pointer;
+  transition: all .15s; user-select: none;
+}
+.bath-demo-card:hover { border-color: var(--tx2); }
+.bath-demo-card.active { border-color: #e05c5c; background: #fff5f5; }
+.bath-demo-chk {
+  width: 18px; height: 18px; border: 1.5px solid var(--bd2);
+  border-radius: 4px; display: flex; align-items: center;
+  justify-content: center; font-size: 11px; flex-shrink: 0;
+}
+.bath-demo-card.active .bath-demo-chk { background: #e05c5c; border-color: #e05c5c; color: #fff; }
+.bath-demo-info { flex: 1; }
+.bath-demo-label { font-size: 12px; font-weight: 500; color: var(--tx); }
+.bath-demo-price { font-size: 11px; color: var(--tx3); margin-top: 2px; }
+.bath-demo-card.active .bath-demo-label { color: #c0392b; font-weight: 600; }
+
+/* ════════ 욕실 방수 옵션 체크 ════════ */
+.bath-water-opts {
+  display: flex; flex-direction: column; gap: 5px; margin-top: 8px;
+}
+.bath-water-opt {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 9px; border-radius: var(--r-sm);
+  border: 0.5px solid var(--bd); background: var(--bg);
+  cursor: pointer; user-select: none; transition: all .15s;
+}
+.bath-water-opt:hover { border-color: var(--bd2); }
+.bath-water-opt.on { border-color: #185fa5; background: var(--info-bg); }
+.bath-water-opt.on .bath-opt-chk { background: #185fa5; border-color: #185fa5; color: #fff; }
