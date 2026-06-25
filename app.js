@@ -9,7 +9,7 @@ const floorDemoSel = {}; // { fd_id: { on, q } }
 let bathRooms = []; // 길이 = 욕실 수
 let negoAmt = 0;    // 네고(할인) 금액 — 항상 양수로 저장, 총액에서 차감
 // 화장실 방수: [ { type: '1st'|'2nd', count: 1 }, ... ] — 개소별
-let bathWaterList = [];
+let bathWaterList = []; // 레거시 — 더 이상 사용 안 함
 // 욕실 철거: { living: false, master: false } — 거실/안방 각각
 let bathDemoState = { living: false, master: false };
 // 카테고리별 기타/네고: { [id]: { text:'', amt:0, nego:0 } }
@@ -19,7 +19,7 @@ function initSel() {
   Object.values(DATA).forEach(cat =>
     cat.items.forEach(it => {
       // bath-demo/water/rooms/cat-extra 는 항상 on=true (별도 상태로 관리)
-      const alwaysOn = ['bath-demo','bath-water','bath-rooms','cat-extra','divider'].includes(it.type);
+      const alwaysOn = ['bath-demo','bath-rooms','cat-extra','divider'].includes(it.type);
       if (!sel[it.id]) sel[it.id] = { on: alwaysOn, q: 1, val: 0, selectIdx: 0 };
       else if (alwaysOn) sel[it.id].on = true;
       if (it.type === 'cat-extra' && !catExtraState[it.id]) {
@@ -99,7 +99,7 @@ function renderItem(it) {
   if (it.type === 'auto-labor') return renderAutoLabor(it, isOn);
   if (it.type === 'auto-waste') return renderAutoWaste(it, isOn);
   if (it.type === 'nego') return renderNego(it);
-  if (it.type === 'bath-water') return renderBathWater(it);
+
   if (it.type === 'bath-demo') return renderBathDemo(it);
   if (it.type === 'divider') return renderDivider(it);
   if (it.type === 'cat-extra') return renderCatExtra(it);
@@ -442,89 +442,11 @@ function toggleBathDemo(key) {
 /* ════════ 화장실 방수 렌더 ════════ */
 // 욕실 방수: 1차=20만, 2~3차 단독=40만, 동시선택 시 각 20만
 // → 1차만: 20만 / 2~3차만: 40만 / 1차+2~3차: 각20만 (합40만)
-const BATH_WATER_P1 = 200000;
-const BATH_WATER_P2_SOLO = 400000;
-const BATH_WATER_P2_COMBO = 200000;
+// 욕실 방수 상수/함수 제거됨 (stepper 방식으로 대체)
 
-function calcBathWaterAmt(r) {
-  if (r.has1st && r.has2nd) return BATH_WATER_P1 + BATH_WATER_P2_COMBO;
-  if (r.has1st) return BATH_WATER_P1;
-  if (r.has2nd) return BATH_WATER_P2_SOLO;
-  return 0;
-}
 
-function renderBathWater(it) {
-  const count = bathWaterList.length;
-  const total = bathWaterList.reduce((s,r) => s + calcBathWaterAmt(r), 0);
 
-  let cards = '';
-  for (let i = 0; i < count; i++) {
-    const r = bathWaterList[i];
-    const roomAmt = calcBathWaterAmt(r);
-    const roomLabel = i===0?'1개소 (거실 욕실)':i===1?'2개소 (안방 욕실)':`${i+1}번째 개소`;
 
-    // 1차+2~3차 동시선택 여부에 따른 안내
-    const comboNote = (r.has1st && r.has2nd)
-      ? `<span style="font-size:10px;color:var(--info-tx);margin-left:6px">동시선택 할인 적용</span>` : '';
-
-    cards += `
-      <div class="bath-water-card">
-        <div class="bath-room-header">
-          <span class="bath-room-label">${roomLabel}</span>
-          <span class="bath-room-amt">${roomAmt > 0 ? fmtW(roomAmt) : '미선택'}</span>
-        </div>
-        <div class="bath-water-opts" onclick="event.stopPropagation()">
-          <div class="bath-water-opt${r.has1st?' on':''}" onclick="event.stopPropagation();toggleBathWater(${i},'1st')">
-            <span class="bath-opt-chk">${r.has1st?'✓':''}</span>
-            <span class="bath-opt-label">1차 방수</span>
-            <span class="bath-opt-price">200,000원</span>
-          </div>
-          <div class="bath-water-opt${r.has2nd?' on':''}" onclick="event.stopPropagation();toggleBathWater(${i},'2nd')">
-            <span class="bath-opt-chk">${r.has2nd?'✓':''}</span>
-            <span class="bath-opt-label">2~3차 방수${r.has1st?'':' (단독 40만)'}</span>
-            <span class="bath-opt-price">${r.has1st?'200,000원':'400,000원'}</span>
-          </div>
-        </div>
-        ${comboNote}
-      </div>`;
-  }
-
-  return `
-    <div class="item item-wide bath-rooms-item">
-      <div class="iinfo" style="flex:1">
-        <div class="bath-header">
-          <div>
-            <div class="iname">욕실 방수</div>
-            <div class="idesc">1차 20만 · 2~3차 단독 40만 · 동시선택 각 20만</div>
-          </div>
-          <div class="bath-counter" onclick="event.stopPropagation()">
-            <button class="qbtn" onclick="event.stopPropagation();adjBathWater(-1)">−</button>
-            <span class="bath-count-num">${count}</span>
-            <button class="qbtn" onclick="event.stopPropagation();adjBathWater(1)">+</button>
-            <span class="iunit">개소</span>
-            ${count > 0 ? `<span class="bath-total-badge">${fmtW(total)}</span>` : ''}
-          </div>
-        </div>
-        ${count > 0 ? `<div class="bath-rooms-grid">${cards}</div>` : ''}
-      </div>
-    </div>`;
-}
-
-function adjBathWater(d) {
-  const newCount = Math.max(0, bathWaterList.length + d);
-  while (bathWaterList.length < newCount) bathWaterList.push({ has1st: false, has2nd: false });
-  while (bathWaterList.length > newCount) bathWaterList.pop();
-  renderItems(); calc();
-}
-
-function toggleBathWater(idx, key) {
-  if (!bathWaterList[idx]) return;
-  if (key === '1st') bathWaterList[idx].has1st = !bathWaterList[idx].has1st;
-  if (key === '2nd') bathWaterList[idx].has2nd = !bathWaterList[idx].has2nd;
-  renderItems(); calc();
-}
-
-/* ════════ 네고 / 할인 렌더 ════════ */
 function renderNego(it) {
   return `
     <div class="item item-wide nego-item">
@@ -669,7 +591,7 @@ function initItemEvents() {
     if (!itemEl) return;
     // 내부 조작 영역 클릭 시 togItem 실행 안 함
     // 내부 조작 영역(버튼/입력/선택) 클릭 시에만 togItem 실행 안 함
-    const stopZones = '.qty-row,.floor-demo-grid,.fd-row,.fd-qty,.fd-check,.auto-adjust-row,.bath-demo-grid,.bath-water-opts,.bath-type-btns,.bath-opts-grid,.bath-fan-row,.bath-counter,.cat-extra-grid,.nego-input-row,.client-info-box,.area-row,.summary,.quote-actions,.quote-doc';
+    const stopZones = '.qty-row,.floor-demo-grid,.fd-row,.fd-qty,.fd-check,.auto-adjust-row,.bath-demo-grid,.bath-type-btns,.bath-opts-grid,.bath-fan-row,.bath-counter,.cat-extra-grid,.nego-input-row,.client-info-box,.area-row,.summary,.quote-actions,.quote-doc';
     if (e.target.closest(stopZones)) return;
     togItem(itemEl.dataset.id);
   });
@@ -681,7 +603,7 @@ function togItem(id) {
   // 이 타입들은 내부 버튼으로만 동작 — .item 클릭 시 아무것도 안 함
   if (it?.type === 'cat-extra' || it?.type === 'divider' ||
       it?.type === 'nego' || it?.type === 'bath-demo' ||
-      it?.type === 'bath-water' || it?.type === 'bath-rooms') return;
+      it?.type === 'bath-rooms') return;
   const s = sel[id]; s.on = !s.on;
   if (s.on) {
     s.q = (it?.pyAuto) ? Math.max(1, Math.round(getPyung())) : 1;
@@ -750,27 +672,7 @@ function calcTotals() {
         return;
       }
 
-      if (it.type === 'bath-water') {
-        // 욕실 방수 계산
-        const roomNames = ['거실 욕실','안방 욕실'];
-        bathWaterList.forEach((r, i) => {
-          const roomLabel = roomNames[i] || `${i+1}개소`;
-          const a = calcBathWaterAmt(r);
-          if (!a) return;
-          if (r.has1st) {
-            const p1 = BATH_WATER_P1;
-            rows.push({ catName, label:`욕실 방수 ${roomLabel} — 1차`, detail:'', qty:1, u:'개소', unitP:p1, amt:p1 });
-          }
-          if (r.has2nd) {
-            const p2 = r.has1st ? BATH_WATER_P2_COMBO : BATH_WATER_P2_SOLO;
-            const desc = r.has1st ? '동시선택 할인' : '단독 선택';
-            rows.push({ catName, label:`욕실 방수 ${roomLabel} — 2~3차`, detail:desc, qty:1, u:'개소', unitP:p2, amt:p2 });
-          }
-          catMap[catName] = (catMap[catName]||0) + a;
-          baseSub += a;
-        });
-        return;
-      }
+
 
       if (!s?.on) return;
 
@@ -870,6 +772,20 @@ function calcTotals() {
       baseSub += a;
       rows.push({ catName:'설비', label:`화장실 방수 ${i+1}개소 — ${t.label}`, detail:t.desc, qty:1, u:'개소', unitP:a, amt:a });
     });
+  }
+
+  // ── 욕실 방수 1차+2~3차 동시 선택 시 할인 처리 ──
+  // 1차(plm_water1) + 2~3차(plm_water2) 동시 선택 시: 2~3차 400,000 → 200,000 (개소당 -20만)
+  const w1 = sel['plm_water1'];
+  const w2 = sel['plm_water2'];
+  if (w1?.on && w2?.on) {
+    const comboQty = Math.min(w1.q, w2.q);
+    const discount = comboQty * 200000; // 개소당 20만 할인
+    if (discount > 0) {
+      catMap['설비'] = (catMap['설비'] || 0) - discount;
+      baseSub -= discount;
+      rows.push({ catName:'설비', label:'욕실 방수 동시선택 할인', detail:`1차+2~3차 ${comboQty}개소`, qty:comboQty, u:'개소', unitP:-200000, amt:-discount });
+    }
   }
 
   // ── 우수관 방수 + 교체 동시 선택 시 세트 500,000원 네고 처리 ──

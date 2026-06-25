@@ -41,10 +41,8 @@ const DATA = {
      2. 설비
   ════════════════════════════════ */
   "설비": { items: [
-    {
-      id:"plm_bath_water", n:"욕실 방수", d:"1차 20만 / 2~3차 단독 40만 · 동시선택 시 각 20만",
-      type:"bath-water", special:true
-    },
+    { id:"plm_water1", n:"욕실 방수 — 1차",   d:"개소당 200,000원",                          type:"stepper", u:"개소", p:200000 },
+    { id:"plm_water2", n:"욕실 방수 — 2~3차", d:"단독 400,000원 · 1차와 동시 시 200,000원", type:"stepper", u:"개소", p:400000 },
     { id:"plm_sink",   n:"싱크대 수도",     d:"싱크대 수도 내림/올림",           type:"simple", u:"식", p:150000 },
     { id:"plm_bath",   n:"욕실 배관",       d:"욕실 배관 개당 350,000원",        type:"stepper",u:"개", p:350000 },
     { id:"plm_drain1", n:"우수관 방수",     d:"개당 250,000원 (교체와 동시 선택 시 세트 500,000원)", type:"stepper",u:"개", p:250000 },
