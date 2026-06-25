@@ -284,10 +284,10 @@ function renderBathRooms(it) {
             <div class="iname">욕실 수 선택</div>
             <div class="idesc">욕실 수를 선택 후 각각 타입과 옵션을 지정하세요</div>
           </div>
-          <div class="bath-counter">
-            <button class="qbtn" onclick="adjBathCount(-1)">−</button>
+          <div class="bath-counter" onclick="event.stopPropagation()">
+            <button class="qbtn" onclick="event.stopPropagation();adjBathCount(-1)">−</button>
             <span class="bath-count-num">${count}</span>
-            <button class="qbtn" onclick="adjBathCount(1)">+</button>
+            <button class="qbtn" onclick="event.stopPropagation();adjBathCount(1)">+</button>
             <span class="iunit">실</span>
             ${count > 0 ? `<span class="bath-total-badge">${fmtW(total)}</span>` : ''}
           </div>
@@ -304,14 +304,14 @@ function adjBathCount(d) {
     opts: { faucet:false, shower:false, zendai:false, mirror:false, size:false, elec:false, tub:false, spray:false, fan:0 }
   });
   while (bathRooms.length > newCount) bathRooms.pop();
-  renderItems(); calc();
+  requestAnimationFrame(() => { renderItems(); calc(); });
 }
 
 function setBathType(idx, type) {
-  if (bathRooms[idx]) { bathRooms[idx].type = type; renderItems(); calc(); }
+  if (bathRooms[idx]) { bathRooms[idx].type = type; requestAnimationFrame(() => { renderItems(); calc(); }); }
 }
 function toggleBathOpt(idx, key) {
-  if (bathRooms[idx]) { bathRooms[idx].opts[key] = !bathRooms[idx].opts[key]; renderItems(); calc(); }
+  if (bathRooms[idx]) { bathRooms[idx].opts[key] = !bathRooms[idx].opts[key]; requestAnimationFrame(() => { renderItems(); calc(); }); }
 }
 function setBathFan(idx, val) {
   if (bathRooms[idx]) { bathRooms[idx].opts.fan = parseInt(val)||0; calc(); }
@@ -436,7 +436,7 @@ function renderBathDemo(it) {
 
 function toggleBathDemo(key) {
   bathDemoState[key] = !bathDemoState[key];
-  renderItems(); calc();
+  requestAnimationFrame(() => { renderItems(); calc(); });
 }
 
 /* ════════ 화장실 방수 렌더 ════════ */
@@ -497,10 +497,10 @@ function renderBathWater(it) {
             <div class="iname">욕실 방수</div>
             <div class="idesc">1차 20만 · 2~3차 단독 40만 · 동시선택 각 20만</div>
           </div>
-          <div class="bath-counter">
-            <button class="qbtn" onclick="adjBathWater(-1)">−</button>
+          <div class="bath-counter" onclick="event.stopPropagation()">
+            <button class="qbtn" onclick="event.stopPropagation();adjBathWater(-1)">−</button>
             <span class="bath-count-num">${count}</span>
-            <button class="qbtn" onclick="adjBathWater(1)">+</button>
+            <button class="qbtn" onclick="event.stopPropagation();adjBathWater(1)">+</button>
             <span class="iunit">개소</span>
             ${count > 0 ? `<span class="bath-total-badge">${fmtW(total)}</span>` : ''}
           </div>
@@ -514,14 +514,14 @@ function adjBathWater(d) {
   const newCount = Math.max(0, bathWaterList.length + d);
   while (bathWaterList.length < newCount) bathWaterList.push({ has1st: false, has2nd: false });
   while (bathWaterList.length > newCount) bathWaterList.pop();
-  renderItems(); calc();
+  requestAnimationFrame(() => { renderItems(); calc(); });
 }
 
 function toggleBathWater(idx, key) {
   if (!bathWaterList[idx]) return;
   if (key === '1st') bathWaterList[idx].has1st = !bathWaterList[idx].has1st;
   if (key === '2nd') bathWaterList[idx].has2nd = !bathWaterList[idx].has2nd;
-  renderItems(); calc();
+  requestAnimationFrame(() => { renderItems(); calc(); });
 }
 
 /* ════════ 네고 / 할인 렌더 ════════ */
