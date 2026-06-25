@@ -172,7 +172,7 @@ function renderFloorDemo(it, isOn) {
               <span class="fd-chk">${fs.on?'✓':''}</span>
               <span class="fd-name">${ft.n}</span>
               <span class="fd-price">${fmt(ft.p)}원/${u}</span>
-            </label>
+            </div>
             ${fs.on ? `<div class="fd-qty">
               <button onclick="adjFD('${ft.id}',-1)">−</button>
               <input type="number" value="${fs.q}" min="1" max="999" onchange="setFD('${ft.id}',this.value)">
@@ -247,11 +247,11 @@ function renderBathRooms(it) {
 
     // 추가 옵션 체크
     const optChecks = BATH_OPTS.map(o => `
-      <label class="bath-opt-item${r.opts[o.key]?' on':''}" onclick="event.stopPropagation();toggleBathOpt(${i},'${o.key}')">
+      <div class="bath-opt-item${r.opts[o.key]?' on':''}" onclick="event.stopPropagation();toggleBathOpt(${i},'${o.key}')">
         <span class="bath-opt-chk">${r.opts[o.key]?'✓':''}</span>
         <span class="bath-opt-label">${o.label}</span>
         <span class="bath-opt-price">+${fmt(o.p)}</span>
-      </label>`).join('');
+      </div>`).join('');
 
     // 환풍기 셀렉트
     const fanOpts = BATH_FAN_OPTS.map((f,fi) =>
@@ -474,16 +474,16 @@ function renderBathWater(it) {
           <span class="bath-room-amt">${roomAmt > 0 ? fmtW(roomAmt) : '미선택'}</span>
         </div>
         <div class="bath-water-opts" onclick="event.stopPropagation()">
-          <label class="bath-water-opt${r.has1st?' on':''}" onclick="event.stopPropagation();toggleBathWater(${i},'1st')">
+          <div class="bath-water-opt${r.has1st?' on':''}" onclick="event.stopPropagation();toggleBathWater(${i},'1st')">
             <span class="bath-opt-chk">${r.has1st?'✓':''}</span>
             <span class="bath-opt-label">1차 방수</span>
             <span class="bath-opt-price">200,000원</span>
-          </label>
-          <label class="bath-water-opt${r.has2nd?' on':''}" onclick="event.stopPropagation();toggleBathWater(${i},'2nd')">
+          </div>
+          <div class="bath-water-opt${r.has2nd?' on':''}" onclick="event.stopPropagation();toggleBathWater(${i},'2nd')">
             <span class="bath-opt-chk">${r.has2nd?'✓':''}</span>
             <span class="bath-opt-label">2~3차 방수${r.has1st?'':' (단독 40만)'}</span>
             <span class="bath-opt-price">${r.has1st?'200,000원':'400,000원'}</span>
-          </label>
+          </div>
         </div>
         ${comboNote}
       </div>`;
@@ -514,14 +514,14 @@ function adjBathWater(d) {
   const newCount = Math.max(0, bathWaterList.length + d);
   while (bathWaterList.length < newCount) bathWaterList.push({ has1st: false, has2nd: false });
   while (bathWaterList.length > newCount) bathWaterList.pop();
-  requestAnimationFrame(() => { renderItems(); calc(); });
+  renderItems(); calc();
 }
 
 function toggleBathWater(idx, key) {
   if (!bathWaterList[idx]) return;
   if (key === '1st') bathWaterList[idx].has1st = !bathWaterList[idx].has1st;
   if (key === '2nd') bathWaterList[idx].has2nd = !bathWaterList[idx].has2nd;
-  requestAnimationFrame(() => { renderItems(); calc(); });
+  renderItems(); calc();
 }
 
 /* ════════ 네고 / 할인 렌더 ════════ */
