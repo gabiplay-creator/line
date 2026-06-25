@@ -787,6 +787,9 @@ function calcTotals() {
         }
         return;
       }
+      if (!s?.on) return;
+
+      let amt = 0;
       let unitP = it.p || 0;
       let detail = it.d;
       let qtyLabel = s.q;
