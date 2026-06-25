@@ -442,9 +442,9 @@ function toggleBathDemo(key) {
 /* ════════ 화장실 방수 렌더 ════════ */
 // 욕실 방수: 1차=20만, 2~3차 단독=40만, 동시선택 시 각 20만
 // → 1차만: 20만 / 2~3차만: 40만 / 1차+2~3차: 각20만 (합40만)
-const BATH_WATER_P1 = 200000;   // 1차 방수
-const BATH_WATER_P2_SOLO = 400000; // 2~3차 단독
-const BATH_WATER_P2_COMBO = 200000; // 2~3차 동시 (1차와 함께)
+const BATH_WATER_P1 = 200000;
+const BATH_WATER_P2_SOLO = 400000;
+const BATH_WATER_P2_COMBO = 200000;
 
 function calcBathWaterAmt(r) {
   if (r.has1st && r.has2nd) return BATH_WATER_P1 + BATH_WATER_P2_COMBO;
