@@ -727,19 +727,21 @@ function calcTotals() {
       }
 
       if (it.type === 'bath-rooms') {
-        // 욕실별 타입 + 옵션 계산 (s.on 체크 불필요 — bathRooms 배열로 관리)
         const BLABELS = { std:'베이직형', high:'스탠다드형', prem:'프리미엄형' };
         bathRooms.forEach((r, i) => {
           const a = calcBathRoomAmt(r);
           if (!a) return;
           const BPRICES_B = { std:2900000, high:4300000, prem:5200000 };
           const baseA = BPRICES_B[r.type] || 0;
-          rows.push({ catName, label: `욕실 ${i+1} — ${BLABELS[r.type]}`, detail:'기본', qty:1, u:'실', unitP:baseA, amt:baseA });
+          rows.push({ catName, label:`욕실 ${i+1} — ${BLABELS[r.type]}`, detail:'기본', qty:1, u:'실', unitP:baseA, amt:baseA });
           BATH_OPTS.forEach(o => {
-            if (r.opts[o.key]) rows.push({ catName, label: `욕실 ${i+1} — ${o.label}`, detail:'', qty:1, u:'개', unitP:o.p, amt:o.p });
+            if (r.opts[o.key]) rows.push({ catName, label:`욕실 ${i+1} — ${o.label}`, detail:'', qty:1, u:'개', unitP:o.p, amt:o.p });
           });
           const fan = BATH_FAN_OPTS[r.opts.fan];
-          if (fan && fan.p > 0) rows.push({ catName, label: `욕실 ${i+1} — ${fan.label}`, detail:'환풍기', qty:1, u:'개', unitP:fan.p, amt:fan.p });
+          if (fan && fan.p > 0) rows.push({ catName, label:`욕실 ${i+1} — ${fan.label}`, detail:'환풍기', qty:1, u:'개', unitP:fan.p, amt:fan.p });
+          // ★ catMap/baseSub 합산
+          catMap[catName] = (catMap[catName]||0) + a;
+          baseSub += a;
         });
         return;
       }
