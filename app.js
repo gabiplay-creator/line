@@ -673,7 +673,7 @@ function bindItemEvents() {
   newContent.addEventListener('click', e => {
     const itemEl = e.target.closest('.item[data-id]');
     if (!itemEl) return;
-    if (e.target.closest('.qty-row,.floor-demo-grid,.fd-row,.fd-qty,.fd-check,.bath-rooms-item,.cat-extra-item,.auto-item,.nego-item')) return;
+    if (e.target.closest('.qty-row,.floor-demo-grid,.fd-row,.fd-qty,.fd-check,.bath-rooms-item,.cat-extra-item,.auto-adjust-row,.nego-item,.bath-demo-grid,.bath-water-opts,.bath-type-btns,.bath-opts-grid,.bath-fan-row,.bath-counter,.bath-header')) return;
     togItem(itemEl.dataset.id);
   });
 }
