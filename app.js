@@ -771,25 +771,21 @@ function calcTotals() {
       let amt = 0;
 
       if (it.type === 'bath-demo') {
-        // 욕실 철거 계산 (s.on 체크 통과 후 처리)
+        // 욕실 철거 계산
         const BATH_DEMO_P = 800000;
         if (bathDemoState.living) {
           catMap[catName] = (catMap[catName]||0) + BATH_DEMO_P;
           baseSub += BATH_DEMO_P;
           rows.push({ catName, label:'욕실 철거 — 거실 욕실', detail:'올철거', qty:1, u:'개소', unitP:BATH_DEMO_P, amt:BATH_DEMO_P });
-          amt += BATH_DEMO_P;
         }
         if (bathDemoState.master) {
           catMap[catName] = (catMap[catName]||0) + BATH_DEMO_P;
           baseSub += BATH_DEMO_P;
           rows.push({ catName, label:'욕실 철거 — 안방 욕실', detail:'올철거', qty:1, u:'개소', unitP:BATH_DEMO_P, amt:BATH_DEMO_P });
-          amt += BATH_DEMO_P;
         }
         return;
       }
-      if (!s?.on) return;
 
-      let amt = 0;
       let unitP = it.p || 0;
       let detail = it.d;
       let qtyLabel = s.q;
