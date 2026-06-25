@@ -277,7 +277,7 @@ function renderBathRooms(it) {
   }
 
   return `
-    <div class="item item-wide bath-rooms-item" onclick="event.stopPropagation()">
+    <div class="item item-wide bath-rooms-item">
       <div class="iinfo" style="flex:1">
         <div class="bath-header">
           <div>
@@ -324,7 +324,7 @@ function renderCatExtra(it) {
   const hasData = st.amt > 0 || st.nego > 0;
 
   return `
-    <div class="item item-wide cat-extra-item" onclick="event.stopPropagation()">
+    <div class="item item-wide cat-extra-item">
       <div class="iinfo" style="flex:1">
         <div class="cat-extra-header">
           <div class="iname" style="font-size:13px">기타 항목 &amp; 네고</div>
@@ -403,7 +403,7 @@ function renderDivider(it) {
 function renderBathDemo(it) {
   const total = (bathDemoState.living ? 800000 : 0) + (bathDemoState.master ? 800000 : 0);
   return `
-    <div class="item item-wide bath-rooms-item" onclick="event.stopPropagation()">
+    <div class="item item-wide bath-rooms-item">
       <div class="iinfo" style="flex:1">
         <div class="bath-header">
           <div>
@@ -490,7 +490,7 @@ function renderBathWater(it) {
   }
 
   return `
-    <div class="item item-wide bath-rooms-item" onclick="event.stopPropagation()">
+    <div class="item item-wide bath-rooms-item">
       <div class="iinfo" style="flex:1">
         <div class="bath-header">
           <div>
@@ -527,7 +527,7 @@ function toggleBathWater(idx, key) {
 /* ════════ 네고 / 할인 렌더 ════════ */
 function renderNego(it) {
   return `
-    <div class="item item-wide nego-item" onclick="event.stopPropagation()">
+    <div class="item item-wide nego-item">
       <div class="nego-icon">%</div>
       <div class="iinfo" style="flex:1">
         <div class="nego-header">
@@ -668,7 +668,8 @@ function initItemEvents() {
     const itemEl = e.target.closest('#content .item[data-id]');
     if (!itemEl) return;
     // 내부 조작 영역 클릭 시 togItem 실행 안 함
-    const stopZones = '.qty-row,.floor-demo-grid,.fd-row,.fd-qty,.fd-check,.cat-extra-item,.auto-adjust-row,.bath-demo-grid,.bath-water-opts,.bath-type-btns,.bath-opts-grid,.bath-fan-row,.bath-counter';
+    // 내부 조작 영역(버튼/입력/선택) 클릭 시에만 togItem 실행 안 함
+    const stopZones = '.qty-row,.floor-demo-grid,.fd-row,.fd-qty,.fd-check,.auto-adjust-row,.bath-demo-grid,.bath-water-opts,.bath-type-btns,.bath-opts-grid,.bath-fan-row,.bath-counter,.cat-extra-grid,.nego-input-row,.client-info-box,.area-row,.summary,.quote-actions,.quote-doc';
     if (e.target.closest(stopZones)) return;
     togItem(itemEl.dataset.id);
   });
@@ -677,13 +678,10 @@ function initItemEvents() {
 function togItem(id) {
   const it = findItem(id);
   // cat-extra / bath-demo / bath-water / bath-rooms 는 별도 상태로 관리 → s.on=true 고정
-  if (it?.type === 'cat-extra' || it?.type === 'divider') return;
-  if (it?.type === 'bath-demo' || it?.type === 'bath-water' || it?.type === 'bath-rooms') {
-    // s.on을 true로 고정해서 calcTotals의 s.on 체크를 통과하게 함
-    sel[it.id].on = true;
-    renderItems(); calc();
-    return;
-  }
+  // 이 타입들은 내부 버튼으로만 동작 — .item 클릭 시 아무것도 안 함
+  if (it?.type === 'cat-extra' || it?.type === 'divider' ||
+      it?.type === 'nego' || it?.type === 'bath-demo' ||
+      it?.type === 'bath-water' || it?.type === 'bath-rooms') return;
   const s = sel[id]; s.on = !s.on;
   if (s.on) {
     s.q = (it?.pyAuto) ? Math.max(1, Math.round(getPyung())) : 1;
