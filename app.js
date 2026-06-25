@@ -68,11 +68,15 @@ function onPyungChange() {
 
 /* ════════ 탭 ════════ */
 function renderTabs() {
+  // onclick 인라인 사용 — addEventListener는 탭 재렌더 시 중복 등록 문제 발생
   document.getElementById('tabs').innerHTML = Object.keys(DATA)
-    .map(c => `<div class="tab${c === curCat ? ' on' : ''}" data-cat="${c}">${c}</div>`).join('');
-  document.querySelectorAll('.tab').forEach(el =>
-    el.addEventListener('click', () => { curCat = el.dataset.cat; renderTabs(); renderItems(); })
-  );
+    .map(c => `<div class="tab${c === curCat ? ' on' : ''}" onclick="switchTab('${c}')">${c}</div>`).join('');
+}
+
+function switchTab(cat) {
+  curCat = cat;
+  renderTabs();
+  renderItems();
 }
 
 /* ════════ 항목 렌더링 ════════ */
@@ -660,11 +664,17 @@ function adjAutoWaste(d) {
 
 /* ════════ 이벤트 바인딩 ════════ */
 function bindItemEvents() {
-  document.getElementById('content').querySelectorAll('.item[data-id]').forEach(el => {
-    el.addEventListener('click', e => {
-      if (e.target.closest('.qty-row,.floor-demo-grid,.fd-row,.fd-qty,.fd-check')) return;
-      togItem(el.dataset.id);
-    });
+  // content innerHTML 교체로 매번 새 DOM이 생성되므로 리스너 중복 없음
+  // 단, 이벤트 위임 방식으로 content에 한 번만 등록
+  const contentEl = document.getElementById('content');
+  // 기존 리스너 제거를 위해 clone으로 교체
+  const newContent = contentEl.cloneNode(true);
+  contentEl.parentNode.replaceChild(newContent, contentEl);
+  newContent.addEventListener('click', e => {
+    const itemEl = e.target.closest('.item[data-id]');
+    if (!itemEl) return;
+    if (e.target.closest('.qty-row,.floor-demo-grid,.fd-row,.fd-qty,.fd-check,.bath-rooms-item,.cat-extra-item,.auto-item,.nego-item')) return;
+    togItem(itemEl.dataset.id);
   });
 }
 
