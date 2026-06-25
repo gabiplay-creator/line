@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSel();
   document.getElementById('clientDate').value = today();
   renderTabs(); renderItems(); calc();
+  initItemEvents(); // 이벤트 위임 — wrap에 딱 한 번만 등록
   document.getElementById('pyung').addEventListener('input', onPyungChange);
   document.getElementById('btn-reset').addEventListener('click', resetAll);
   document.getElementById('btn-excel').addEventListener('click', downloadExcel);
@@ -86,7 +87,6 @@ function renderItems() {
   catData.items.forEach(it => { html += renderItem(it); });
   html += '</div>';
   document.getElementById('content').innerHTML = html;
-  bindItemEvents();
 }
 
 function renderItem(it) {
@@ -662,18 +662,14 @@ function adjAutoWaste(d) {
 // calcYoungDoorBase 제거됨 (매트 옵션 삭제)
 
 
-/* ════════ 이벤트 바인딩 ════════ */
-function bindItemEvents() {
-  // content innerHTML 교체로 매번 새 DOM이 생성되므로 리스너 중복 없음
-  // 단, 이벤트 위임 방식으로 content에 한 번만 등록
-  const contentEl = document.getElementById('content');
-  // 기존 리스너 제거를 위해 clone으로 교체
-  const newContent = contentEl.cloneNode(true);
-  contentEl.parentNode.replaceChild(newContent, contentEl);
-  newContent.addEventListener('click', e => {
-    const itemEl = e.target.closest('.item[data-id]');
+/* ════════ 이벤트 바인딩 — DOMContentLoaded에서 wrap에 딱 한 번 등록 ════════ */
+function initItemEvents() {
+  document.querySelector('.wrap').addEventListener('click', e => {
+    const itemEl = e.target.closest('#content .item[data-id]');
     if (!itemEl) return;
-    if (e.target.closest('.qty-row,.floor-demo-grid,.fd-row,.fd-qty,.fd-check,.bath-rooms-item,.cat-extra-item,.auto-adjust-row,.nego-item,.bath-demo-grid,.bath-water-opts,.bath-type-btns,.bath-opts-grid,.bath-fan-row,.bath-counter,.bath-header')) return;
+    // 내부 조작 영역 클릭 시 togItem 실행 안 함
+    const stopZones = '.qty-row,.floor-demo-grid,.fd-row,.fd-qty,.fd-check,.cat-extra-item,.auto-adjust-row,.bath-demo-grid,.bath-water-opts,.bath-type-btns,.bath-opts-grid,.bath-fan-row,.bath-counter';
+    if (e.target.closest(stopZones)) return;
     togItem(itemEl.dataset.id);
   });
 }
