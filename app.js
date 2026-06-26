@@ -69,9 +69,29 @@ function onPyungChange() {
 
 /* ════════ 탭 ════════ */
 function renderTabs() {
-  // onclick 인라인 사용 — addEventListener는 탭 재렌더 시 중복 등록 문제 발생
+  // 카테고리별 금액 합산 (탭 배지용)
+  const catTotals = getCatTotals();
   document.getElementById('tabs').innerHTML = Object.keys(DATA)
-    .map(c => `<div class="tab${c === curCat ? ' on' : ''}" onclick="switchTab('${c}')">${c}</div>`).join('');
+    .map(c => {
+      const amt = catTotals[c] || 0;
+      const hasAmt = amt > 0;
+      const badge = hasAmt ? `<span class="tab-badge">${formatTabAmt(amt)}</span>` : '';
+      return `<div class="tab${c === curCat ? ' on' : ''}${hasAmt ? ' has-amt' : ''}" onclick="switchTab('${c}')">${c}${badge}</div>`;
+    }).join('');
+}
+
+function formatTabAmt(n) {
+  if (n >= 10000000) return (n/10000000).toFixed(0) + '천만';
+  if (n >= 1000000)  return (n/10000).toFixed(0) + '만';
+  if (n >= 10000)    return (n/10000).toFixed(0) + '만';
+  return (n/1000).toFixed(0) + '천';
+}
+
+function getCatTotals() {
+  const map = {};
+  // calcTotals의 catMap만 빠르게 재계산
+  const { catMap } = calcTotals();
+  return catMap;
 }
 
 function switchTab(cat) {
@@ -855,6 +875,7 @@ function calc() {
   const py = getPyung();
   document.getElementById('sqm').textContent = `(약 ${Math.round(py*3.3)}㎡)`;
   const { sub, vat, total, catMap, rows, nego, subAfterNego, vatAfterNego, totalAfterNego } = calcTotals();
+  renderTabs(); // 금액 변경 시 탭 배지 갱신
   const perPyAfter = py > 0 ? Math.round(subAfterNego/py) : 0;
   // 소계카드: 네고 있으면 취소선 + 할인 표시
   const subCardInner = nego > 0
