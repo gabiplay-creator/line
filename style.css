@@ -439,3 +439,133 @@ h1 { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -.4px; marg
   .quote-doc { padding:18px 16px; margin:12px 10px 0; }
   .quote-actions { margin:12px 10px 0; }
 }
+
+/* ════════════════════════════════════════
+   카테고리별 컬러 테마 + 항목 카드 개편
+   ════════════════════════════════════════ */
+
+/* ── 공통 구역 래퍼 ── */
+.cat-zone {
+  border-radius: var(--r-lg);
+  padding: 16px;
+  border: 1.5px solid transparent;
+}
+
+/* ── 카테고리 색상 팔레트 ── */
+.cat-red    { background: #fff5f5; border-color: #fecaca; }
+.cat-blue   { background: #eff6ff; border-color: #bfdbfe; }
+.cat-teal   { background: #f0fdfa; border-color: #99f6e4; }
+.cat-amber  { background: #fffbeb; border-color: #fde68a; }
+.cat-cyan   { background: #ecfeff; border-color: #a5f3fc; }
+.cat-stone  { background: #fafaf9; border-color: #d6d3d1; }
+.cat-lime   { background: #f7fee7; border-color: #bef264; }
+.cat-sky    { background: #f0f9ff; border-color: #bae6fd; }
+.cat-wood   { background: #fdf4e7; border-color: #fcd7a0; }
+.cat-green  { background: #f0fdf4; border-color: #86efac; }
+.cat-slate  { background: #f8fafc; border-color: #cbd5e1; }
+.cat-yellow { background: #fefce8; border-color: #fef08a; }
+.cat-purple { background: #faf5ff; border-color: #e9d5ff; }
+.cat-gray   { background: #f9fafb; border-color: #e5e7eb; }
+
+/* 다크모드 */
+@media (prefers-color-scheme:dark) {
+  .cat-red    { background: #2d1515; border-color: #7f1d1d; }
+  .cat-blue   { background: #172554; border-color: #1e40af; }
+  .cat-teal   { background: #042f2e; border-color: #115e59; }
+  .cat-amber  { background: #2d1a00; border-color: #92400e; }
+  .cat-cyan   { background: #083344; border-color: #164e63; }
+  .cat-stone  { background: #1c1917; border-color: #44403c; }
+  .cat-lime   { background: #1a2e05; border-color: #365314; }
+  .cat-sky    { background: #082f49; border-color: #0c4a6e; }
+  .cat-wood   { background: #2a1a06; border-color: #7c4a1a; }
+  .cat-green  { background: #052e16; border-color: #14532d; }
+  .cat-slate  { background: #0f172a; border-color: #334155; }
+  .cat-yellow { background: #2d2600; border-color: #854d0e; }
+  .cat-purple { background: #2e1065; border-color: #6b21a8; }
+  .cat-gray   { background: #18181b; border-color: #3f3f46; }
+}
+
+/* ── 카드 스타일 재정의 (cat-zone 안에서) ── */
+.cat-zone .item {
+  background: var(--bg);
+  border-color: rgba(0,0,0,.07);
+  transition: all .18s cubic-bezier(.4,0,.2,1);
+}
+
+.cat-zone .item:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 6px 20px rgba(0,0,0,.12);
+  border-color: rgba(0,0,0,.13);
+}
+
+.cat-zone .item.sel {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(37,99,235,.2);
+}
+
+/* ── 카테고리별 선택 강조색 ── */
+.cat-red .item.sel    { border-color: #ef4444; background: #fff5f5; box-shadow: 0 4px 14px rgba(239,68,68,.18); }
+.cat-red .item.sel .chk { background: #ef4444; border-color: #ef4444; }
+
+.cat-blue .item.sel   { border-color: var(--accent); background: var(--accent-lt); }
+
+.cat-teal .item.sel   { border-color: #0d9488; background: #f0fdfa; box-shadow: 0 4px 14px rgba(13,148,136,.18); }
+.cat-teal .item.sel .chk { background: #0d9488; border-color: #0d9488; }
+
+.cat-amber .item.sel  { border-color: #d97706; background: #fffbeb; box-shadow: 0 4px 14px rgba(217,119,6,.18); }
+.cat-amber .item.sel .chk { background: #d97706; border-color: #d97706; }
+
+.cat-cyan .item.sel   { border-color: #0891b2; background: #ecfeff; box-shadow: 0 4px 14px rgba(8,145,178,.18); }
+.cat-cyan .item.sel .chk { background: #0891b2; border-color: #0891b2; }
+
+.cat-lime .item.sel   { border-color: #65a30d; background: #f7fee7; box-shadow: 0 4px 14px rgba(101,163,13,.18); }
+.cat-lime .item.sel .chk { background: #65a30d; border-color: #65a30d; }
+
+.cat-sky .item.sel    { border-color: #0284c7; background: #f0f9ff; box-shadow: 0 4px 14px rgba(2,132,199,.18); }
+.cat-sky .item.sel .chk { background: #0284c7; border-color: #0284c7; }
+
+.cat-wood .item.sel   { border-color: #c2410c; background: #fdf4e7; box-shadow: 0 4px 14px rgba(194,65,12,.18); }
+.cat-wood .item.sel .chk { background: #c2410c; border-color: #c2410c; }
+
+.cat-green .item.sel  { border-color: var(--green); background: #f0fdf4; box-shadow: 0 4px 14px rgba(22,163,74,.18); }
+.cat-green .item.sel .chk { background: var(--green); border-color: var(--green); }
+
+.cat-slate .item.sel  { border-color: #475569; background: #f8fafc; box-shadow: 0 4px 14px rgba(71,85,105,.18); }
+.cat-slate .item.sel .chk { background: #475569; border-color: #475569; }
+
+.cat-yellow .item.sel { border-color: #ca8a04; background: #fefce8; box-shadow: 0 4px 14px rgba(202,138,4,.18); }
+.cat-yellow .item.sel .chk { background: #ca8a04; border-color: #ca8a04; }
+
+.cat-purple .item.sel { border-color: #7c3aed; background: #faf5ff; box-shadow: 0 4px 14px rgba(124,58,237,.18); }
+.cat-purple .item.sel .chk { background: #7c3aed; border-color: #7c3aed; }
+
+/* ── 탭 활성화 색상도 카테고리 테마와 연동 ── */
+.tabs { background: var(--bg); }
+
+/* ── #content 배경 제거 (cat-zone이 담당) ── */
+#content {
+  background: var(--bg3);
+  padding: 12px 16px;
+  min-height: 200px;
+}
+
+/* ── 카테고리 헤더 배지 (items-divider 업그레이드) ── */
+.cat-zone .items-divider-label {
+  font-size: 10px;
+  letter-spacing: .4px;
+}
+
+/* ── 수량 버튼 cat-zone별 컬러 ── */
+.cat-red    .qbtn:hover { background: #fee2e2; border-color: #ef4444; color: #ef4444; }
+.cat-teal   .qbtn:hover { background: #ccfbf1; border-color: #0d9488; color: #0d9488; }
+.cat-amber  .qbtn:hover { background: #fef3c7; border-color: #d97706; color: #d97706; }
+.cat-cyan   .qbtn:hover { background: #cffafe; border-color: #0891b2; color: #0891b2; }
+.cat-lime   .qbtn:hover { background: #ecfccb; border-color: #65a30d; color: #65a30d; }
+.cat-wood   .qbtn:hover { background: #ffedd5; border-color: #c2410c; color: #c2410c; }
+.cat-green  .qbtn:hover { background: #dcfce7; border-color: #16a34a; color: #16a34a; }
+.cat-purple .qbtn:hover { background: #ede9fe; border-color: #7c3aed; color: #7c3aed; }
+.cat-yellow .qbtn:hover { background: #fef9c3; border-color: #ca8a04; color: #ca8a04; }
+
+/* ── auto-item 배지 카테고리색 반영 ── */
+.cat-red  .item.sel .auto-count-badge { background: #ef4444; border-color: #ef4444; }
+.cat-amber .item.sel .auto-count-badge { background: #d97706; border-color: #d97706; }
