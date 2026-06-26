@@ -571,20 +571,26 @@ h1 { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -.4px; marg
 .cat-amber .item.sel .auto-count-badge { background: #d97706; border-color: #d97706; }
 
 /* ════════ 탭 금액 배지 ════════ */
-.tab { position: relative; }
+.tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px 10px;
+}
 
 .tab-badge {
-  display: inline-block;
+  display: block;
   font-size: 9px;
   font-weight: 800;
   line-height: 1;
-  padding: 2px 5px;
+  padding: 2px 6px;
   border-radius: var(--r-pill);
-  margin-left: 4px;
-  vertical-align: middle;
   background: #e2e8f0;
-  color: #475569;
+  color: #94a3b8;
   transition: all .15s;
+  white-space: nowrap;
 }
 
 /* 금액 있는 탭 */
@@ -620,32 +626,4 @@ h1 { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -.4px; marg
   color: var(--accent) !important;
 }
 
-/* 탭 좌측에 컬러 도트 표시 */
-.tab.has-amt::before {
-  content: '';
-  display: inline-block;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  margin-right: 5px;
-  vertical-align: middle;
-  flex-shrink: 0;
-}
-
-.tab.has-amt[onclick*="철거"]::before   { background: #ef4444; }
-.tab.has-amt[onclick*="설비"]::before   { background: #3b82f6; }
-.tab.has-amt[onclick*="중문"]::before   { background: #0d9488; }
-.tab.has-amt[onclick*="목공"]::before   { background: #d97706; }
-.tab.has-amt[onclick*="욕실"]::before   { background: #0891b2; }
-.tab.has-amt[onclick*="타일"]::before   { background: #64748b; }
-.tab.has-amt[onclick*="도배"]::before   { background: #65a30d; }
-.tab.has-amt[onclick*="창호"]::before   { background: #0284c7; }
-.tab.has-amt[onclick*="마루"]::before   { background: #ea580c; }
-.tab.has-amt[onclick*="장판"]::before   { background: #16a34a; }
-.tab.has-amt[onclick*="방범창"]::before { background: #475569; }
-.tab.has-amt[onclick*="전기"]::before   { background: #ca8a04; }
-.tab.has-amt[onclick*="가구"]::before   { background: #7c3aed; }
-.tab.has-amt[onclick*="기타"]::before   { background: #6b7280; }
-
-/* 활성 탭 도트는 흰색 */
-.tab.on.has-amt::before { background: var(--accent); box-shadow: 0 0 0 2px rgba(37,99,235,.3); }
+/* 도트 제거 — 배지 색상으로 카테고리 구분 */
