@@ -8,30 +8,34 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-<div class="header">
-  <h1>인테리어 견적 계산기</h1>
-  <p class="sub">항목 선택 후 수량 입력 → 자동 견적 계산</p>
-</div>
-
-<!-- 고객 정보 -->
-<div class="client-info-box">
-    <div class="client-grid">
-      <div class="client-field"><label>고객명</label><input type="text" id="clientName" placeholder="홍길동 님"></div>
-      <div class="client-field"><label>연락처</label><input type="text" id="clientPhone" placeholder="010-0000-0000"></div>
-      <div class="client-field"><label>주소 / 평형</label><input type="text" id="clientAddr" placeholder="소사본동 삼익 32평"></div>
-      <div class="client-field"><label>시공 예상기간</label><input type="text" id="clientPeriod" placeholder="4주"></div>
-      <div class="client-field"><label>특이사항</label><input type="text" id="clientNote" placeholder="현장 특이사항"></div>
-      <div class="client-field"><label>견적서 작성일</label><input type="date" id="clientDate"></div>
+<div class="top-section">
+  <div class="top-inner">
+    <div class="top-title-row">
+      <div class="top-logo">🏠</div>
+      <div class="top-title-text">
+        <h1>인테리어 견적 계산기</h1>
+        <p class="sub">항목 선택 후 수량 입력 → 자동 견적 계산</p>
+      </div>
+      <div class="top-pyung-box">
+        <label for="pyung">평수</label>
+        <input type="number" id="pyung" value="32" min="1" max="200" step="1">
+        <span class="pyung-unit">평형</span>
+        <span id="sqm" class="sqm-text"></span>
+      </div>
     </div>
-</div>
-
-<!-- 평수 -->
-<div class="area-row">
-    <label for="pyung">평수</label>
-    <input type="number" id="pyung" value="32" min="1" max="200" step="1">
-    <span>평형</span>
-    <span id="sqm" class="sqm-text"></span>
-    <span class="badge">평당 항목 수량 자동 적용</span>
+    <div class="client-rows">
+      <div class="client-row">
+        <div class="client-field"><label>고객명</label><input type="text" id="clientName" placeholder="홍길동 님"></div>
+        <div class="client-field"><label>연락처</label><input type="text" id="clientPhone" placeholder="010-0000-0000"></div>
+        <div class="client-field"><label>주소 / 평형</label><input type="text" id="clientAddr" placeholder="소사본동 삼익 32평"></div>
+      </div>
+      <div class="client-row">
+        <div class="client-field"><label>시공 예상기간</label><input type="text" id="clientPeriod" placeholder="4주"></div>
+        <div class="client-field"><label>특이사항</label><input type="text" id="clientNote" placeholder="현장 특이사항"></div>
+        <div class="client-field"><label>견적서 작성일</label><input type="date" id="clientDate"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="wrap">
