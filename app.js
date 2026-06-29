@@ -826,23 +826,32 @@ function calcTotals() {
     }
   }
 
-  // ── 우수관 방수 + 교체 동시 선택 시 세트 500,000원 네고 처리 ──
+  // ── 우수관 방수 + 교체 동시 선택 시 세트 할인 ──
+  // 세트: 방수(25만) + 교체(35만) = 60만 → 50만 (개소당 10만 할인)
+  // 수량 다를 경우: 최소값만큼 세트, 나머지는 개별 단가 적용
+  // 예) 방수2 + 교체1 → 1세트(50만) + 방수1개(25만) = 75만
   const drain1 = sel['plm_drain1'];
   const drain2 = sel['plm_drain2'];
   if (drain1?.on && drain2?.on) {
-    // 각각 낸 금액 합산
-    const paid1 = 250000 * drain1.q;
-    const paid2 = 350000 * drain2.q;
-    const paidTotal = paid1 + paid2;
-    // 세트 금액: 500,000원 (수량 1세트 기준, 추가 개수는 각 단가 적용)
-    const setAmt = 500000;
-    const discount = paidTotal - setAmt;
+    const setQty   = Math.min(drain1.q, drain2.q); // 세트 적용 수량
+    const extra1   = drain1.q - setQty;             // 방수 단독 잉여
+    const extra2   = drain2.q - setQty;             // 교체 단독 잉여
+
+    // 현재 rows에 이미 개별 단가로 계산된 금액이 들어있음
+    // 실제 내야 할 금액으로 보정
+    const currentCharged = (250000 * drain1.q) + (350000 * drain2.q);
+    const correctAmt     = (500000 * setQty) + (250000 * extra1) + (350000 * extra2);
+    const discount       = currentCharged - correctAmt;
+
     if (discount > 0) {
-      // 이미 rows/catMap에 반영된 금액을 보정
       catMap['설비'] = (catMap['설비'] || 0) - discount;
       baseSub -= discount;
-      // rows에 할인 행 추가
-      rows.push({ catName:'설비', label:'우수관 방수+교체 세트 할인', detail:'동시 선택 시 500,000원 적용', qty:1, u:'세트', unitP:-discount, amt:-discount });
+      rows.push({
+        catName: '설비',
+        label:  `우수관 세트 할인 (${setQty}세트)`,
+        detail: `방수+교체 세트 500,000원/세트`,
+        qty: setQty, u: '세트', unitP: -100000, amt: -discount
+      });
     }
   }
 
