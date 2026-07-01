@@ -147,7 +147,8 @@ const DATA = {
     { id:"wall_32", n:"32평 (7품)",  d:"도배지 포함 · 3,400,000원", type:"simple", u:"식", p:3400000 },
     { id:"wall_42", n:"42평 (9품)",  d:"도배지 포함 · 3,800,000원", type:"simple", u:"식", p:3800000 },
     { id:"wall_48", n:"48평 (10품)", d:"도배지 포함 · 4,400,000원", type:"simple", u:"식", p:4400000 },
-    { id:"wall_add", n:"품 추가",    d:"1품당 300,000원", type:"stepper", u:"품", p:300000 },
+    { id:"wall_add",  n:"품 추가",    d:"1품당 300,000원", type:"stepper", u:"품", p:300000 },
+    { id:"wall_paper_name", n:"도배지명 메모", d:"사용할 도배지 브랜드/제품명 입력", type:"wall-paper-name", special:true },
     { id:"wall_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 

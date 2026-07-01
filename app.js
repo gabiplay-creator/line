@@ -10,6 +10,7 @@ let bathRooms = []; // 길이 = 욕실 수
 let negoAmt = 0;    // 네고(할인) 금액 — 항상 양수로 저장, 총액에서 차감
 // 화장실 방수: [ { type: '1st'|'2nd', count: 1 }, ... ] — 개소별
 let bathWaterList = []; // 레거시 — 더 이상 사용 안 함
+let wallPaperName = ''; // 도배지명 메모
 // 욕실 철거: { living: false, master: false } — 거실/안방 각각
 let bathDemoState = { living: false, master: false };
 // 카테고리별 기타/네고: { [id]: { text:'', amt:0, nego:0 } }
@@ -19,7 +20,7 @@ function initSel() {
   Object.values(DATA).forEach(cat =>
     cat.items.forEach(it => {
       // bath-demo/water/rooms/cat-extra 는 항상 on=true (별도 상태로 관리)
-      const alwaysOn = ['bath-demo','bath-rooms','cat-extra','divider'].includes(it.type);
+      const alwaysOn = ['bath-demo','bath-rooms','cat-extra','divider','wall-paper-name'].includes(it.type);
       if (!sel[it.id]) sel[it.id] = { on: alwaysOn, q: 1, val: 0, selectIdx: 0 };
       else if (alwaysOn) sel[it.id].on = true;
       if (it.type === 'cat-extra' && !catExtraState[it.id]) {
@@ -139,6 +140,7 @@ function renderItem(it) {
   if (it.type === 'nego') return renderNego(it);
 
   if (it.type === 'bath-demo') return renderBathDemo(it);
+  if (it.type === 'wall-paper-name') return renderWallPaperName(it);
   if (it.type === 'divider') return renderDivider(it);
   if (it.type === 'cat-extra') return renderCatExtra(it);
 
@@ -437,6 +439,29 @@ function renderDivider(it) {
   </div>`;
 }
 
+/* ════════ 도배지명 메모 렌더 ════════ */
+function renderWallPaperName(it) {
+  return `
+    <div class="item item-wide wall-paper-name-item" onclick="event.stopPropagation()">
+      <div class="iinfo" style="flex:1">
+        <div class="wall-paper-header">
+          <span class="iname">📋 도배지명 메모</span>
+          <span class="idesc">사용할 도배지 브랜드 및 제품명을 입력하세요 (견적서에 포함됩니다)</span>
+        </div>
+        <input class="wall-paper-input" type="text"
+          placeholder="예: 개나리 로하스 / LG 실크벽지 프리미엄 등"
+          value="${wallPaperName}"
+          oninput="event.stopPropagation();setWallPaperName(this.value)"
+          onclick="event.stopPropagation()">
+      </div>
+    </div>`;
+}
+
+function setWallPaperName(v) {
+  wallPaperName = v;
+  renderQuoteDoc(); // 견적서 즉시 갱신
+}
+
 /* ════════ 욕실 철거 렌더 ════════ */
 function renderBathDemo(it) {
   const total = (bathDemoState.living ? 800000 : 0) + (bathDemoState.master ? 800000 : 0);
@@ -641,7 +666,7 @@ function togItem(id) {
   // 이 타입들은 내부 버튼으로만 동작 — .item 클릭 시 아무것도 안 함
   if (it?.type === 'cat-extra' || it?.type === 'divider' ||
       it?.type === 'nego' || it?.type === 'bath-demo' ||
-      it?.type === 'bath-rooms') return;
+      it?.type === 'bath-rooms' || it?.type === 'wall-paper-name') return;
   const s = sel[id]; s.on = !s.on;
   if (s.on) {
     s.q = (it?.pyAuto) ? Math.max(1, Math.round(getPyung())) : 1;
@@ -949,6 +974,7 @@ function renderQuoteDoc(totals) {
   const grouped = {};
   rows.forEach(r => {
     if (!grouped[r.catName]) grouped[r.catName] = [];
+    // 도배지명 메모가 있으면 도배 카테고리 첫 항목에 추가
     grouped[r.catName].push(r);
   });
 
@@ -959,11 +985,14 @@ function renderQuoteDoc(totals) {
     detailHtml += `<tr class="qrow-cat">
       <td>${cat}</td><td colspan="4"></td>
       <td class="q-amount">${fmt(catTotal)}</td></tr>`;
-    list.forEach(r => {
+    list.forEach((r, ri) => {
       const up = r.unitP ? fmt(r.unitP) : '-';
+      // 도배 카테고리 첫 항목에 도배지명 표시
+      const wallNote = (cat === '도배' && ri === 0 && wallPaperName)
+        ? `<br><span class="q-detail" style="color:#2563eb;font-weight:600">📋 도배지: ${wallPaperName}</span>` : '';
       detailHtml += `<tr>
         <td></td>
-        <td class="q-name">${r.label}${r.detail?`<br><span class="q-detail">${r.detail}</span>`:''}</td>
+        <td class="q-name">${r.label}${r.detail?`<br><span class="q-detail">${r.detail}</span>`:''}${wallNote}</td>
         <td class="q-center">${r.u}</td>
         <td class="q-center">${r.qty}</td>
         <td class="q-price">${up}</td>
@@ -1096,6 +1125,7 @@ function resetAll() {
   negoAmt = 0;
   bathWaterList = [];
   bathDemoState = { living: false, master: false };
+  wallPaperName = '';
   Object.keys(catExtraState).forEach(id => { catExtraState[id] = { text:'', amt:0, nego:0 }; });
   document.getElementById('nego-input') && (document.getElementById('nego-input').value = '');
   renderItems(); calc();
