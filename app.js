@@ -106,16 +106,14 @@ function switchTab(cat) {
 /* ════════ 항목 렌더링 ════════ */
 const CAT_COLORS = {
   '철거':     'cat-red',
+  '창호':     'cat-sky',
   '설비':     'cat-blue',
   '중문':     'cat-teal',
   '목공':     'cat-amber',
   '욕실':     'cat-cyan',
   '타일':     'cat-stone',
   '도배':     'cat-lime',
-  '창호':     'cat-sky',
   '마루':     'cat-wood',
-  '장판·데코':'cat-green',
-  '방범창':   'cat-slate',
   '전기·조명':'cat-yellow',
   '가구·설비':'cat-purple',
   '기타':     'cat-gray',
