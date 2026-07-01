@@ -284,16 +284,19 @@ const DATA = {
      12. 전기·조명
   ════════════════════════════════ */
   "전기·조명": { items: [
-    { id:"e1",  n:"거실 LED 조명",            d:"거실 통합 LED",          u:"식",   p:170000,  type:"simple"  },
-    { id:"e2",  n:"주방 LED 조명",            d:"주방 통합 LED",          u:"식",   p:50000,   type:"simple"  },
-    { id:"e3",  n:"방 LED 35640×640",         d:"방 LED 패널 3ea 기준",  u:"식",   p:138000,  type:"simple"  },
-    { id:"e4",  n:"실링팬 52인치",            d:"설치비 포함",            u:"개",   p:120000,  type:"stepper" },
-    { id:"e5",  n:"조명 전체 교체",           d:"LED 엣지등+베란다+현관", u:"식",   p:2200000, type:"simple"  },
-    { id:"e6",  n:"스위치·콘센트 전체 교체",  d:"나노 화이트 기준",       u:"식",   p:900000,  type:"simple"  },
-    { id:"e7",  n:"소방감지기 교체",          d:"감지기4+주방화재1+가스1", u:"세트", p:250000,  type:"simple"  },
-    { id:"e8",  n:"인덕션 라인 신설",         d:"라인+콘센트 2구",        u:"식",   p:200000,  type:"simple"  },
-    { id:"e9",  n:"3인치 주백 LED",           d:"매입등 시공비 포함",     u:"개",   p:4500,    type:"stepper" },
-    { id:"e10", n:"T5 1200 주백",             d:"형광등 교체",            u:"개",   p:6500,    type:"stepper" },
+    // 평형별 패키지 선택
+    { id:"elec_pkg", n:"전기·조명 패키지", d:"평형에 따라 자동 단가 적용", type:"elec-pkg", special:true },
+
+    // 추가 공사 (별도)
+    { id:"elx_div", n:"", d:"", type:"divider", label:"추가 공사 (별도)" },
+    { id:"e_up",   n:"승압",                     d:"500,000원",              u:"식", p:500000,  type:"simple"  },
+    { id:"e_con",  n:"콘센트 신설",               d:"15만/개소",              u:"개소",p:150000, type:"stepper" },
+    { id:"e_sw",   n:"스위치 신설",               d:"10만/개소",              u:"개소",p:100000, type:"stepper" },
+    { id:"e_line", n:"전기 신규 입선",            d:"20만/회로",              u:"회로",p:200000, type:"stepper" },
+    { id:"e_ind",  n:"인덕션 배선",               d:"200,000원",              u:"식", p:200000,  type:"simple"  },
+    { id:"e_pan",  n:"분전함 교체",               d:"250,000원",              u:"식", p:250000,  type:"simple"  },
+    { id:"e_brk",  n:"차단기 교체",               d:"250,000원",              u:"식", p:250000,  type:"simple"  },
+    { id:"e_wall", n:"벽까기",                    d:"10만/개소",              u:"개소",p:100000, type:"stepper" },
     { id:"elec_extra", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
   ]},
 

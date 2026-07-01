@@ -11,6 +11,8 @@ let negoAmt = 0;    // 네고(할인) 금액 — 항상 양수로 저장, 총액
 // 화장실 방수: [ { type: '1st'|'2nd', count: 1 }, ... ] — 개소별
 let bathWaterList = []; // 레거시 — 더 이상 사용 안 함
 let wallPaperName = ''; // 도배지명 메모
+// 전기·조명 패키지 상태
+let elecPkg = { type: null }; // type: 'basic'|'standard'|'premium'|null
 // 욕실 철거: { living: false, master: false } — 거실/안방 각각
 let bathDemoState = { living: false, master: false };
 // 카테고리별 기타/네고: { [id]: { text:'', amt:0, nego:0 } }
@@ -20,7 +22,7 @@ function initSel() {
   Object.values(DATA).forEach(cat =>
     cat.items.forEach(it => {
       // bath-demo/water/rooms/cat-extra 는 항상 on=true (별도 상태로 관리)
-      const alwaysOn = ['bath-demo','bath-rooms','cat-extra','divider','wall-paper-name'].includes(it.type);
+      const alwaysOn = ['bath-demo','bath-rooms','cat-extra','divider','wall-paper-name','elec-pkg'].includes(it.type);
       if (!sel[it.id]) sel[it.id] = { on: alwaysOn, q: 1, val: 0, selectIdx: 0 };
       else if (alwaysOn) sel[it.id].on = true;
       if (it.type === 'cat-extra' && !catExtraState[it.id]) {
@@ -141,6 +143,7 @@ function renderItem(it) {
 
   if (it.type === 'bath-demo') return renderBathDemo(it);
   if (it.type === 'wall-paper-name') return renderWallPaperName(it);
+  if (it.type === 'elec-pkg') return renderElecPkg(it);
   if (it.type === 'divider') return renderDivider(it);
   if (it.type === 'cat-extra') return renderCatExtra(it);
 
@@ -439,6 +442,91 @@ function renderDivider(it) {
   </div>`;
 }
 
+/* ════════ 전기·조명 패키지 렌더 ════════ */
+const ELEC_TYPES = [
+  {
+    key:'basic', label:'베이직', color:'#16a34a',
+    items:['기존 배선 점검 및 보수','LED 전등 전체 교체','스위치·콘센트 전체 교체','차단기 점검','기본 매립등 시공','욕실/베란다 조명 교체','전기 마감 및 절연']
+  },
+  {
+    key:'standard', label:'스탠다드', color:'#2563eb',
+    items:['베이직 포함','매립등 추가 설치','간접조명(우물·커튼박스 등)','콘센트·스위치 위치 변경','TV/인터넷 배선 정리','주방 펜던트 조명','회로 일부 증설','IoT 스위치 일부 적용']
+  },
+  {
+    key:'premium', label:'프리미엄', color:'#7c3aed',
+    items:['스탠다드 포함','공간별 조명 설계','전기배선 신규 입선','회로 증설 및 분리','스마트 스위치 전체','팬던트·라인조명 시공','무드 간접조명','대용량 가전 전용 회로','분전반 정비 및 교체(필요시)']
+  },
+];
+
+// 평형별 단가표
+function getElecPrice(pyung, type) {
+  const ranges = [
+    { max:24,  basic:1800000, standard:2600000, premium:3600000 },
+    { max:34,  basic:2400000, standard:3300000, premium:4500000 },
+    { max:42,  basic:2900000, standard:3900000, premium:5300000 },
+    { max:999, basic:3400000, standard:4600000, premium:6200000 },
+  ];
+  const range = ranges.find(r => pyung <= r.max) || ranges[ranges.length-1];
+  return range[type] || 0;
+}
+
+function getPyungLabel(pyung) {
+  if (pyung <= 24)  return '21~24평';
+  if (pyung <= 34)  return '28~34평';
+  if (pyung <= 42)  return '36~42평';
+  return '43~48평';
+}
+
+function renderElecPkg(it) {
+  const py = getPyung();
+  const pyLabel = getPyungLabel(py);
+  const cur = elecPkg.type;
+
+  const typeBtns = ELEC_TYPES.map(t => {
+    const p = getElecPrice(py, t.key);
+    const isOn = cur === t.key;
+    return `<button class="elec-type-btn${isOn ? ' active' : ''}"
+      style="${isOn ? 'background:'+t.color+';color:#fff;border-color:'+t.color : ''}"
+      onclick="event.stopPropagation();setElecType('${t.key}')">
+      <span class="elec-type-label">${t.label}</span>
+      <span class="elec-type-price">${fmt(p)}원</span>
+    </button>`;
+  }).join('');
+
+  // 선택된 타입의 항목 목록
+  let itemList = '';
+  if (cur) {
+    const sel_type = ELEC_TYPES.find(t => t.key === cur);
+    if (sel_type) {
+      itemList = `<div class="elec-items-list">
+        ${sel_type.items.map(item => `<span class="elec-item-tag">✓ ${item}</span>`).join('')}
+      </div>`;
+    }
+  }
+
+  const totalAmt = cur ? getElecPrice(py, cur) : 0;
+
+  return `
+    <div class="item item-wide elec-pkg-item" onclick="event.stopPropagation()">
+      <div class="iinfo" style="flex:1">
+        <div class="bath-header">
+          <div>
+            <div class="iname">전기·조명 패키지</div>
+            <div class="idesc">평형(${py}평 · ${pyLabel}) 기준 자동 단가 적용</div>
+          </div>
+          ${totalAmt > 0 ? `<span class="bath-total-badge">${fmtW(totalAmt)}</span>` : ''}
+        </div>
+        <div class="elec-type-btns">${typeBtns}</div>
+        ${itemList}
+      </div>
+    </div>`;
+}
+
+function setElecType(type) {
+  elecPkg.type = (elecPkg.type === type) ? null : type; // 재클릭 시 해제
+  renderItems(); calc();
+}
+
 /* ════════ 도배지명 메모 렌더 ════════ */
 function renderWallPaperName(it) {
   return `
@@ -666,7 +754,8 @@ function togItem(id) {
   // 이 타입들은 내부 버튼으로만 동작 — .item 클릭 시 아무것도 안 함
   if (it?.type === 'cat-extra' || it?.type === 'divider' ||
       it?.type === 'nego' || it?.type === 'bath-demo' ||
-      it?.type === 'bath-rooms' || it?.type === 'wall-paper-name') return;
+      it?.type === 'bath-rooms' || it?.type === 'wall-paper-name' ||
+      it?.type === 'elec-pkg') return;
   const s = sel[id]; s.on = !s.on;
   if (s.on) {
     s.q = (it?.pyAuto) ? Math.max(1, Math.round(getPyung())) : 1;
@@ -740,6 +829,18 @@ function calcTotals() {
       if (!s?.on) return;
 
       let amt = 0;
+
+      if (it.type === 'elec-pkg') {
+        if (!elecPkg.type) return;
+        const py = getPyung();
+        const a = getElecPrice(py, elecPkg.type);
+        if (!a) return;
+        const typeLabel = ELEC_TYPES.find(t=>t.key===elecPkg.type)?.label || '';
+        catMap[catName] = (catMap[catName]||0) + a;
+        baseSub += a;
+        rows.push({ catName, label:`전기·조명 ${typeLabel} 패키지`, detail:`${getPyungLabel(py)} 기준`, qty:1, u:'식', unitP:a, amt:a });
+        return;
+      }
 
       if (it.type === 'bath-demo') {
         // 욕실 철거 계산
@@ -1126,6 +1227,7 @@ function resetAll() {
   bathWaterList = [];
   bathDemoState = { living: false, master: false };
   wallPaperName = '';
+  elecPkg = { type: null };
   Object.keys(catExtraState).forEach(id => { catExtraState[id] = { text:'', amt:0, nego:0 }; });
   document.getElementById('nego-input') && (document.getElementById('nego-input').value = '');
   renderItems(); calc();

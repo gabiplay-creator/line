@@ -654,3 +654,52 @@ h1 { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -.4px; marg
   box-shadow: 0 0 0 3px rgba(2,132,199,.12);
 }
 .wall-paper-input::placeholder { color: #94a3b8; font-weight: 400; }
+
+/* ════════ 전기·조명 패키지 ════════ */
+.elec-pkg-item { cursor: default; align-items: flex-start; }
+
+.elec-type-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.elec-type-btn {
+  flex: 1;
+  min-width: 100px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--bd2);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  color: var(--tx);
+  cursor: pointer;
+  transition: all .15s;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  user-select: none;
+}
+.elec-type-btn:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.elec-type-btn.active { font-weight: 700; box-shadow: 0 3px 10px rgba(0,0,0,.2); }
+.elec-type-label { font-size: 13px; font-weight: 700; }
+.elec-type-price { font-size: 11px; opacity: .85; font-weight: 500; }
+
+.elec-items-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 10px 0 2px;
+  border-top: 1px dashed var(--bd2);
+}
+.elec-item-tag {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  background: var(--bg2);
+  color: var(--tx2);
+  border: 1px solid var(--bd);
+  white-space: nowrap;
+}
