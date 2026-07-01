@@ -237,16 +237,35 @@ const DATA = {
      10. 장판·데코
   ════════════════════════════════ */
   "장판·데코": { items: [
-    { id:"lf1",  n:"뉴청맥 1.8T 장판",        d:"LX 시트",  u:"평", p:25400,  type:"pyung-unit", pyAuto:true },
-    { id:"lf2",  n:"은행목 2.0T 장판",         d:"LX 시트",  u:"평", p:38200,  type:"pyung-unit", pyAuto:true },
-    { id:"lf3",  n:"지아자연애 2.2T",          d:"LX 시트",  u:"평", p:50700,  type:"pyung-unit", pyAuto:true },
-    { id:"lf4",  n:"지아사랑애 3.2T",          d:"LX 시트",  u:"평", p:82900,  type:"pyung-unit", pyAuto:true },
-    { id:"lf5",  n:"엑스컴포트 5.0T",          d:"LX 시트",  u:"평", p:107800, type:"pyung-unit", pyAuto:true },
-    { id:"lf6",  n:"보타닉 데코타일",          d:"LX 450x450x3.0T", u:"평", p:42500,  type:"pyung-unit", pyAuto:true },
-    { id:"lf7",  n:"에코노플러스 데코타일",    d:"LX 450x450x3.0T", u:"평", p:52500,  type:"pyung-unit", pyAuto:true },
-    { id:"lf8",  n:"지아마루 스타일 데코타일", d:"LX 600x600x3.0T", u:"평", p:57000,  type:"pyung-unit", pyAuto:true },
-    { id:"lf9",  n:"하우스 스타일 데코타일",   d:"LX 600x600x3.0T", u:"평", p:61000,  type:"pyung-unit", pyAuto:true },
-    { id:"lf10", n:"프레스티지 스톤",          d:"LX S(T)600*600",  u:"평", p:79000,  type:"pyung-unit", pyAuto:true },
+
+    // ── LX하우시스 (LG) ──
+    { id:"lf_lx_div", n:"", d:"", type:"divider", label:"LX하우시스 (LG)" },
+    { id:"lf1",  n:"뉴청맥 1.8T 장판",        d:"LX 시트 · 자재+시공",          u:"평", p:27600,  type:"pyung-unit", pyAuto:true },
+    { id:"lf2",  n:"은행목 2.0T 장판",         d:"LX 시트 · 자재+시공",          u:"평", p:39600,  type:"pyung-unit", pyAuto:true },
+    { id:"lf3",  n:"지아자연애 2.2T",          d:"LX 시트 · 자재+시공",          u:"평", p:52100,  type:"pyung-unit", pyAuto:true },
+    { id:"lf4",  n:"지아사랑애 2.7T",          d:"LX 시트 · 자재+시공",          u:"평", p:74600,  type:"pyung-unit", pyAuto:true },
+    { id:"lf4b", n:"지아사랑애 3.2T",          d:"LX 시트 · 자재+시공",          u:"평", p:85400,  type:"pyung-unit", pyAuto:true },
+    { id:"lf4c", n:"지아소리잠 4.5T",          d:"LX 시트 · 자재+시공",          u:"평", p:99300,  type:"pyung-unit", pyAuto:true },
+    { id:"lf5",  n:"엑스컴포트 5.0T",          d:"LX 시트 · 자재+시공",          u:"평", p:113600, type:"pyung-unit", pyAuto:true },
+    { id:"lf6",  n:"보타닉 데코타일",          d:"LX · 450x450x3.0T · 자재+시공", u:"평", p:45000,  type:"pyung-unit", pyAuto:true },
+    { id:"lf7",  n:"에코노플러스 데코타일",    d:"LX · 450x450x3.0T · 자재+시공", u:"평", p:55500,  type:"pyung-unit", pyAuto:true },
+    { id:"lf8",  n:"하우스 스타일 데코타일",   d:"LX · 600x600x3.0T · 자재+시공", u:"평", p:67000,  type:"pyung-unit", pyAuto:true },
+    { id:"lf10", n:"프레스티지 스톤",          d:"LX · S(T)600x600 · 자재+시공",  u:"평", p:79000,  type:"pyung-unit", pyAuto:true },
+
+    // ── 대진장판 ──
+    { id:"lf_dj_div", n:"", d:"", type:"divider", label:"대진장판" },
+    { id:"dj1",  n:"대진장판 1.8T (롤)",       d:"대진 · 시공비 포함 · 22,300원/평", u:"평", p:22300,  type:"pyung-unit", pyAuto:true },
+    { id:"dj2",  n:"대진장판 1.8T (절단)",      d:"대진 · 시공비 포함 · 24,100원/평", u:"평", p:24100,  type:"pyung-unit", pyAuto:true },
+    { id:"dj3",  n:"대진장판 2.2T",             d:"대진 · 시공비 포함 · 36,800원/평", u:"평", p:36800,  type:"pyung-unit", pyAuto:true },
+    { id:"dj4",  n:"대진장판 3.2T",             d:"대진 · 시공비 포함 · 57,700원/평", u:"평", p:57700,  type:"pyung-unit", pyAuto:true },
+    { id:"dj5",  n:"대진장판 5T",               d:"대진 · 시공비 포함 · 79,700원/평", u:"평", p:79700,  type:"pyung-unit", pyAuto:true },
+
+    // ── 대진 데코타일 ──
+    { id:"lf_djd_div", n:"", d:"", type:"divider", label:"대진 데코타일" },
+    { id:"dj6",  n:"일반 데코타일",             d:"대진 데코리아 · 시공비 포함",      u:"평", p:35000,  type:"pyung-unit", pyAuto:true },
+    { id:"dj7",  n:"600각/470각 유광 (4칼라)",  d:"대진 데코리아 · 시공비 포함",      u:"평", p:36000,  type:"pyung-unit", pyAuto:true },
+    { id:"dj8",  n:"고급 하우스 데코타일",      d:"대진 데코리아 · 시공비 포함",      u:"평", p:48000,  type:"pyung-unit", pyAuto:true },
+    { id:"dj9",  n:"OA타일 (대전방지용)",       d:"대진 데코리아 · 시공비 포함",      u:"평", p:72000,  type:"pyung-unit", pyAuto:true },
   ]},
 
   /* ════════════════════════════════
