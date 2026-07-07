@@ -48,6 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-excel').addEventListener('click', downloadExcel);
   document.getElementById('btn-print-detail').addEventListener('click', () => { setPrintMode('detail'); window.print(); });
   document.getElementById('btn-print-simple').addEventListener('click', () => { setPrintMode('simple'); window.print(); });
+  document.getElementById('btn-save').addEventListener('click', saveQuote);
+  document.getElementById('btn-load').addEventListener('click', () => document.getElementById('load-modal').classList.remove('hidden'));
+  document.getElementById('btn-share').addEventListener('click', shareQuote);
+  document.getElementById('load-modal-close').addEventListener('click', () => document.getElementById('load-modal').classList.add('hidden'));
+  loadSavedList();
   ['clientName','clientPhone','clientAddr','clientPeriod','clientNote','clientDate']
     .forEach(id => document.getElementById(id).addEventListener('input', () => renderQuoteDoc()));
 });
@@ -1214,6 +1219,184 @@ function applyNumFmt(ws, data) {
       if (ws[ref]) ws[ref].z = '#,##0';
     }
   }));
+}
+
+/* ════════ 저장 / 불러오기 / 공유 ════════ */
+
+function getSnapshot() {
+  return {
+    v: 1,
+    ts: Date.now(),
+    pyung: getPyung(),
+    clientName:   document.getElementById('clientName').value,
+    clientPhone:  document.getElementById('clientPhone').value,
+    clientAddr:   document.getElementById('clientAddr').value,
+    clientPeriod: document.getElementById('clientPeriod').value,
+    clientNote:   document.getElementById('clientNote').value,
+    clientDate:   document.getElementById('clientDate').value,
+    sel: JSON.parse(JSON.stringify(sel)),
+    bathRooms: JSON.parse(JSON.stringify(bathRooms)),
+    bathDemoState: JSON.parse(JSON.stringify(bathDemoState)),
+    catExtraState: JSON.parse(JSON.stringify(catExtraState)),
+    wallPaperName,
+    elecPkg: JSON.parse(JSON.stringify(elecPkg)),
+    negoAmt,
+    floorDemoSel: JSON.parse(JSON.stringify(floorDemoSel)),
+  };
+}
+
+function applySnapshot(snap) {
+  if (!snap || snap.v !== 1) { alert('올바른 견적 파일이 아닙니다.'); return; }
+  document.getElementById('pyung').value = snap.pyung || 32;
+  document.getElementById('clientName').value   = snap.clientName || '';
+  document.getElementById('clientPhone').value  = snap.clientPhone || '';
+  document.getElementById('clientAddr').value   = snap.clientAddr || '';
+  document.getElementById('clientPeriod').value = snap.clientPeriod || '';
+  document.getElementById('clientNote').value   = snap.clientNote || '';
+  document.getElementById('clientDate').value   = snap.clientDate || '';
+  // 상태 복원
+  Object.assign(sel, snap.sel || {});
+  bathRooms     = snap.bathRooms || [];
+  bathDemoState = snap.bathDemoState || { living:false, master:false };
+  Object.assign(catExtraState, snap.catExtraState || {});
+  wallPaperName = snap.wallPaperName || '';
+  elecPkg       = snap.elecPkg || { type: null };
+  negoAmt       = snap.negoAmt || 0;
+  Object.assign(floorDemoSel, snap.floorDemoSel || {});
+  renderTabs(); renderItems(); calc(); syncSimpleInfo?.();
+}
+
+/* ── 로컬 저장 ── */
+function saveQuote() {
+  const name = document.getElementById('clientName').value || '견적';
+  const key  = 'quote_' + Date.now();
+  const snap = getSnapshot();
+  snap.label = name + ' (' + new Date().toLocaleDateString('ko-KR') + ')';
+  try {
+    localStorage.setItem(key, JSON.stringify(snap));
+    loadSavedList();
+    showToast('💾 저장 완료: ' + snap.label);
+  } catch(e) {
+    alert('저장 실패: ' + e.message);
+  }
+}
+
+function loadSavedList() {
+  const list = document.getElementById('saved-list');
+  if (!list) return;
+  const keys = Object.keys(localStorage).filter(k => k.startsWith('quote_')).sort().reverse();
+  if (!keys.length) {
+    list.innerHTML = '<p class="saved-empty">저장된 견적이 없습니다.</p>';
+    return;
+  }
+  list.innerHTML = keys.map(k => {
+    const snap = JSON.parse(localStorage.getItem(k) || '{}');
+    const { sub, total } = calcTotalsFromSnap(snap);
+    return `<div class="saved-item">
+      <div class="saved-item-info">
+        <div class="saved-item-label">${snap.label || '견적'}</div>
+        <div class="saved-item-amt">${fmt(sub)}원 (VAT포함 ${fmt(total)}원)</div>
+      </div>
+      <div class="saved-item-btns">
+        <button class="saved-btn load" onclick="loadQuote('${k}')">불러오기</button>
+        <button class="saved-btn share" onclick="shareQuoteKey('${k}')">공유</button>
+        <button class="saved-btn del" onclick="deleteQuote('${k}')">삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function calcTotalsFromSnap(snap) {
+  // 임시로 상태 바꿔서 계산 후 복원
+  const origSel = JSON.parse(JSON.stringify(sel));
+  const origBath = JSON.parse(JSON.stringify(bathRooms));
+  const origElec = JSON.parse(JSON.stringify(elecPkg));
+  const origNego = negoAmt;
+  Object.assign(sel, snap.sel || {});
+  bathRooms = snap.bathRooms || [];
+  elecPkg   = snap.elecPkg || { type: null };
+  negoAmt   = snap.negoAmt || 0;
+  const result = calcTotals();
+  Object.assign(sel, origSel);
+  bathRooms = origBath;
+  elecPkg   = origElec;
+  negoAmt   = origNego;
+  return result;
+}
+
+function loadQuote(key) {
+  const snap = JSON.parse(localStorage.getItem(key) || 'null');
+  if (!snap) { alert('불러오기 실패'); return; }
+  applySnapshot(snap);
+  document.getElementById('load-modal').classList.add('hidden');
+  showToast('📂 불러오기 완료: ' + snap.label);
+}
+
+function deleteQuote(key) {
+  if (!confirm('이 견적을 삭제할까요?')) return;
+  localStorage.removeItem(key);
+  loadSavedList();
+}
+
+/* ── URL 공유 ── */
+function shareQuote() {
+  const snap = getSnapshot();
+  const json = JSON.stringify(snap);
+  const encoded = btoa(encodeURIComponent(json));
+  const url = location.href.split('?')[0] + '?q=' + encoded;
+  if (url.length > 20000) {
+    // 너무 길면 클립보드에 JSON 복사
+    navigator.clipboard?.writeText(JSON.stringify(snap)).then(() => {
+      showToast('📋 견적 데이터 클립보드 복사 완료! (붙여넣기로 공유)');
+    });
+    return;
+  }
+  navigator.clipboard?.writeText(url).then(() => {
+    showToast('🔗 공유 링크 복사 완료!');
+  }).catch(() => {
+    prompt('아래 링크를 복사하세요:', url);
+  });
+}
+
+function shareQuoteKey(key) {
+  const snap = JSON.parse(localStorage.getItem(key) || 'null');
+  if (!snap) return;
+  const json = JSON.stringify(snap);
+  const encoded = btoa(encodeURIComponent(json));
+  const url = location.href.split('?')[0] + '?q=' + encoded;
+  navigator.clipboard?.writeText(url).then(() => {
+    showToast('🔗 공유 링크 복사 완료!');
+  }).catch(() => {
+    prompt('아래 링크를 복사하세요:', url);
+  });
+}
+
+/* ── URL에서 견적 불러오기 ── */
+function loadFromURL() {
+  const params = new URLSearchParams(location.search);
+  const q = params.get('q');
+  if (!q) return;
+  try {
+    const snap = JSON.parse(decodeURIComponent(atob(q)));
+    applySnapshot(snap);
+    showToast('🔗 공유된 견적을 불러왔습니다!');
+  } catch(e) {
+    console.warn('URL 견적 불러오기 실패:', e);
+  }
+}
+
+/* ── 토스트 알림 ── */
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.className = 'toast show';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
 /* ════════ 초기화 ════════ */

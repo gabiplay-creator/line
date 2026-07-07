@@ -56,10 +56,27 @@
 
   <!-- 견적서 액션 버튼 -->
   <div class="quote-actions">
-    <div class="quote-actions-label">견적서 출력 / 저장</div>
+    <div class="quote-actions-label">저장 / 불러오기 / 공유</div>
+    <button class="btn-action btn-save"  id="btn-save">💾 견적 저장</button>
+    <button class="btn-action btn-load"  id="btn-load">📂 불러오기</button>
+    <button class="btn-action btn-share" id="btn-share">🔗 링크 공유</button>
+  </div>
+  <div class="quote-actions" style="margin-top:8px">
+    <div class="quote-actions-label">견적서 출력</div>
     <button class="btn-action btn-excel"        id="btn-excel">⬇ 엑셀 저장</button>
     <button class="btn-action btn-print-detail" id="btn-print-detail">🖨 상세 견적서</button>
     <button class="btn-action btn-print-simple" id="btn-print-simple">🖨 요약 견적서</button>
+  </div>
+
+  <!-- 불러오기 모달 -->
+  <div id="load-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">📂 저장된 견적 불러오기</span>
+        <button class="modal-close" id="load-modal-close">✕</button>
+      </div>
+      <div id="saved-list" class="saved-list"></div>
+    </div>
   </div>
 
   <!-- ① 상세 견적서 -->
