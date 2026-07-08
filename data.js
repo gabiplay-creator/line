@@ -319,6 +319,98 @@ const DATA = {
     { id:"etc5", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
     { id:"etc_nego", n:"네고 / 할인", d:"마이너스(-) 금액 입력 — 총액에서 차감", type:"nego", special:true },
   ]},
+  /* ════════════════════════════════
+     양우아파트 — 풀 견적 패키지
+     105㎡ 고정, 카테고리별 쭉 선택
+  ════════════════════════════════ */
+  "양우아파트": { items: [
+
+    // ── 철거 ──
+    { id:"yw_div1", n:"", d:"", type:"divider", label:"철거" },
+    { id:"yw_dem1",  n:"가구 철거",     d:"신발장, 싱크대, 거실장 등",        type:"simple",  u:"식", p:1500000 },
+    { id:"yw_dem2",  n:"목공 철거",     d:"몰딩, 욕실문, 천정 등 기본 철거", type:"simple",  u:"식", p:500000  },
+    { id:"yw_dem3",  n:"마루 철거",     d:"거실 강마루/장판 철거",            type:"simple",  u:"식", p:300000  },
+    { id:"yw_dem4",  n:"거실 욕실 철거",d:"기본 철거 (덧방 포함)",            type:"simple",  u:"식", p:700000  },
+    { id:"yw_dem5",  n:"안방 욕실 철거",d:"기본 철거 (덧방 포함)",            type:"simple",  u:"식", p:600000  },
+    { id:"yw_dem6",  n:"폐기물",        d:"폐기물 처리비",                    type:"simple",  u:"식", p:500000  },
+
+    // ── 설비 ──
+    { id:"yw_div2", n:"", d:"", type:"divider", label:"설비" },
+    { id:"yw_plm1",  n:"싱크대 수도",   d:"싱크대 수도 내림",                 type:"simple",  u:"식", p:150000  },
+    { id:"yw_plm2",  n:"배관 정리",     d:"배관 정리 및 교체",                type:"simple",  u:"식", p:200000  },
+
+    // ── 중문 ──
+    { id:"yw_div3", n:"", d:"", type:"divider", label:"중문" },
+    { id:"yw_mid1",  n:"중문 3연동",    d:"간살도어 시공 포함",               type:"simple",  u:"식", p:1000000 },
+
+    // ── 목공 ──
+    { id:"yw_div4", n:"", d:"", type:"divider", label:"목공" },
+    { id:"yw_carp1", n:"문 시공",       d:"문+문틀 4개소 (12mm 문선, 예림)", type:"stepper", u:"개소", p:404000 },
+    { id:"yw_carp2", n:"실링팬 보강",   d:"천장 보강 포함",                   type:"simple",  u:"식", p:250000  },
+    { id:"yw_carp3", n:"몰딩",          d:"거실+방 전체 상·하단 몰딩",        type:"simple",  u:"식", p:1000000 },
+    { id:"yw_carp4", n:"단열",          d:"외벽 1면 목공 단열",               type:"simple",  u:"식", p:1200000 },
+    { id:"yw_carp5", n:"천장 작업",     d:"공용부 천장+커튼박스",             type:"simple",  u:"식", p:600000  },
+
+    // ── 거실 욕실 ──
+    { id:"yw_div5", n:"", d:"", type:"divider", label:"거실 욕실" },
+    { id:"yw_bt1",   n:"욕실 타일",     d:"벽 300×600 + 바닥 300×300 프리미엄", type:"simple", u:"식", p:2300000 },
+    { id:"yw_bt2",   n:"양변기",        d:"투피스 치마형 위생도기 (대림)",    type:"simple",  u:"개", p:294300  },
+    { id:"yw_bt3",   n:"세면기",        d:"벽붙이 세면대 (대림)",             type:"simple",  u:"개", p:167000  },
+    { id:"yw_bt4",   n:"수납장",        d:"슬라이드장 1200 + 조명",           type:"simple",  u:"개", p:190000  },
+    { id:"yw_bt5",   n:"수전금구",      d:"세면·샤워수전 + 악세사리 세트",    type:"simple",  u:"식", p:200000  },
+    { id:"yw_bt6",   n:"환풍기",        d:"하츠 티오람",                      type:"simple",  u:"개", p:150000  },
+    { id:"yw_bt7",   n:"파티션",        d:"조적+유리 파티션",                 type:"simple",  u:"식", p:700000  },
+    { id:"yw_bt8",   n:"천정+등",       d:"평돔+매입등",                      type:"simple",  u:"식", p:230000  },
+    { id:"yw_bt9",   n:"욕조",          d:"욕조 1600×750 + 벽면 타일",        type:"simple",  u:"개", p:350000  },
+
+    // ── 안방 욕실 ──
+    { id:"yw_div6", n:"", d:"", type:"divider", label:"안방 욕실" },
+    { id:"yw_bt10",  n:"안방 욕실 시공",d:"거실 욕실 동일 (욕조 제외)",       type:"simple",  u:"식", p:2100000 },
+    { id:"yw_bt11",  n:"타일·도기 인건비",d:"타일 1품",                       type:"simple",  u:"식", p:350000  },
+    { id:"yw_bt12",  n:"베란다 벽면 타일",d:"베란다 2곳 옆면 타일 교체",      type:"simple",  u:"식", p:450000  },
+
+    // ── 타일 ──
+    { id:"yw_div7", n:"", d:"", type:"divider", label:"타일" },
+    { id:"yw_tl1",   n:"현관 타일",     d:"600×600 포세린/폴리싱 기준",       type:"simple",  u:"식", p:300000  },
+    { id:"yw_tl2",   n:"주방벽 타일",   d:"300×600 도기타일 기준",            type:"simple",  u:"식", p:350000  },
+    { id:"yw_tl3",   n:"발코니 타일",   d:"300×300 도기타일",                 type:"simple",  u:"식", p:200000  },
+
+    // ── 도배 ──
+    { id:"yw_div8", n:"", d:"", type:"divider", label:"도배" },
+    { id:"yw_wp1",   n:"도배",          d:"거실+방1 실크 / 나머지 합지 도배지 포함", type:"simple", u:"식", p:3200000 },
+
+    // ── 마루·바닥재 ──
+    { id:"yw_div9", n:"", d:"", type:"divider", label:"마루 · 바닥재" },
+    { id:"yw_fl1",   n:"동화 나투스 진",d:"시공 포함 (105㎡ 기준)",            type:"simple",  u:"식", p:2500000 },
+    { id:"yw_fl2",   n:"대진장판 2.2T", d:"드림크리마 마필 시공 포함",         type:"simple",  u:"식", p:1400000 },
+
+    // ── 전기·조명 ──
+    { id:"yw_div10", n:"", d:"", type:"divider", label:"전기·조명" },
+    { id:"yw_el1",   n:"전등 전체",     d:"LED 엣지등, 매립등, 베란다, 현관 등", type:"simple", u:"식", p:2700000 },
+    { id:"yw_el2",   n:"스위치·콘센트", d:"전체 교체 국산 프리미엄",           type:"simple",  u:"식", p:900000  },
+    { id:"yw_el3",   n:"인덕션 라인",   d:"인덕션 라인 신설 + 콘센트 2구",     type:"simple",  u:"식", p:200000  },
+    { id:"yw_el4",   n:"소방 감지기",   d:"감지기4+주방화재1+가스1 교체",      type:"simple",  u:"식", p:250000  },
+
+    // ── 가구·설비 ──
+    { id:"yw_div11", n:"", d:"", type:"divider", label:"가구·설비" },
+    { id:"yw_fu1",   n:"싱크대",        d:"예림 듀이클라우드 + 현대 상판",     type:"simple",  u:"식", p:3000000 },
+    { id:"yw_fu2",   n:"주방 악세사리", d:"사각볼+거위목+후드+인덕션(하츠)",   type:"simple",  u:"식", p:400000  },
+    { id:"yw_fu3",   n:"신발장",        d:"중·하부 + 조명",                    type:"simple",  u:"식", p:800000  },
+    { id:"yw_fu4",   n:"배관 철거",     d:"기존 배관 철거",                    type:"simple",  u:"식", p:150000  },
+
+    // ── 도장 ──
+    { id:"yw_div12", n:"", d:"", type:"divider", label:"도장" },
+    { id:"yw_pt1",   n:"탄성 코트",     d:"발코니 2개소 프리미엄 세라믹 친환경", type:"simple", u:"식", p:900000 },
+
+    // ── 기타 ──
+    { id:"yw_div13", n:"", d:"", type:"divider", label:"기타" },
+    { id:"yw_etc1",  n:"공사 신고",     d:"주민동의·엘리베이터·동선 보양비",  type:"simple",  u:"식", p:300000  },
+    { id:"yw_etc2",  n:"실리콘 마감",   d:"전체 실리콘 마감",                  type:"simple",  u:"식", p:350000  },
+    { id:"yw_etc3",  n:"잡비",          d:"식대·부자재·유류비",               type:"simple",  u:"식", p:500000  },
+    { id:"yw_etc4",  n:"업체 이윤 10%", d:"공사대금의 10%",                    type:"simple",  u:"식", p:0, pct:0.1 },
+    { id:"yw_extra", n:"기타 / 네고",   d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
+  ]},
+
 };
 
 /* 마루 철거 세부 단가 (floor-demo 전용) */

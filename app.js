@@ -108,10 +108,15 @@ function switchTab(cat) {
   curCat = cat;
   renderTabs();
   renderItems();
+  // 양우 탭이면 평수 안내 고정
+  if (cat === '양우아파트') {
+    document.getElementById('sqm').textContent = '(105㎡ 고정)';
+  }
 }
 
 /* ════════ 항목 렌더링 ════════ */
 const CAT_COLORS = {
+  '양우아파트': 'cat-yangu',
   '철거':     'cat-red',
   '창호':     'cat-sky',
   '설비':     'cat-blue',
@@ -129,10 +134,20 @@ const CAT_COLORS = {
 function renderItems() {
   const catData = DATA[curCat];
   const colorClass = CAT_COLORS[curCat] || 'cat-gray';
-  let html = `<div class="items cat-zone ${colorClass}">`;
+  const isYangu = curCat === '양우아파트';
+  let html = `<div class="items cat-zone ${colorClass}${isYangu?' yangu-zone':''}">`;
   catData.items.forEach(it => { html += renderItem(it); });
   html += '</div>';
   document.getElementById('content').innerHTML = html;
+
+  // 양우 탭 진입 시 평수 105㎡(32평) 고정 안내
+  if (isYangu) {
+    const pyEl = document.getElementById('pyung');
+    if (pyEl && pyEl.value != 32) {
+      pyEl.value = 32;
+      document.getElementById('sqm').textContent = '(105㎡ 고정)';
+    }
+  }
 }
 
 function renderItem(it) {

@@ -863,3 +863,60 @@ h1 { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -.4px; marg
 @media print {
   .pay-ratio-box-outer { display: none !important; }
 }
+
+/* ════════ 양우아파트 전용 ════════ */
+.cat-yangu {
+  background: linear-gradient(135deg, #f0f9ff 0%, #faf5ff 100%);
+  border-color: #c4b5fd;
+}
+
+/* 양우 탭 강조 */
+.tab[onclick*="양우아파트"] {
+  font-weight: 700;
+  color: #7c3aed;
+}
+.tab[onclick*="양우아파트"].on {
+  color: #7c3aed;
+  border-bottom-color: #7c3aed;
+}
+
+/* 양우 세로 레이아웃 — 항목을 한 줄씩 쭉 나열 */
+.yangu-zone {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.yangu-zone .item {
+  grid-column: unset !important;
+}
+
+/* 양우 구분선 강조 */
+.yangu-zone .items-divider {
+  margin-top: 10px;
+  padding: 8px 0 4px;
+}
+
+.yangu-zone .items-divider-label {
+  background: #7c3aed;
+  color: #fff;
+  border-color: #7c3aed;
+  font-size: 11px;
+  padding: 4px 14px;
+}
+
+/* 양우 선택 항목 보라색 강조 */
+.yangu-zone .item.sel {
+  border-color: #7c3aed;
+  background: #faf5ff;
+  box-shadow: 0 0 0 3px rgba(124,58,237,.12), var(--shadow);
+}
+.yangu-zone .item.sel .chk {
+  background: #7c3aed;
+  border-color: #7c3aed;
+}
+.yangu-zone .qbtn:hover {
+  background: #ede9fe;
+  border-color: #7c3aed;
+  color: #7c3aed;
+}
