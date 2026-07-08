@@ -11,6 +11,65 @@ let negoAmt = 0;    // 네고(할인) 금액 — 항상 양수로 저장, 총액
 // 화장실 방수: [ { type: '1st'|'2nd', count: 1 }, ... ] — 개소별
 let bathWaterList = []; // 레거시 — 더 이상 사용 안 함
 let wallPaperName = ''; // 도배지명 메모
+// 양우아파트 아코디언 상태: divider id -> 열림 여부
+const yanguOpen = {}; // 양우 아코디언 열림 상태
+let yanguTemplate = null; // 선택된 템플릿
+
+// A/B/C형 기본 선택 항목
+const YANGU_TEMPLATES = {
+  A: {
+    label: 'A형 — 기본 풀공사',
+    desc: '32평 비확장 · 욕실2 · 장판 · 전기·전등 · 싱크대',
+    color: '#2563eb',
+    ids: {
+      yw_dem_labor:{on:true,q:5}, yw_dem1:{on:true,q:1}, yw_dem2:{on:true,q:1},
+      yw_dem3:{on:true,q:1}, yw_dem4:{on:true,q:1}, yw_dem5:{on:true,q:1},
+      yw_dem6:{on:true,q:1},
+      yw_plm1:{on:true,q:1}, yw_plm2:{on:true,q:2},
+      yw_mid1:{on:true,q:1},
+      yw_carp0:{on:true,q:3}, yw_carp1s:{on:true,q:5}, yw_carp2:{on:true,q:1}, yw_carp3:{on:true,q:1},
+      yw_bt1:{on:true,q:2}, yw_bt2:{on:true,q:2}, yw_bt3:{on:true,q:2},
+      yw_bt4:{on:true,q:2}, yw_bt5:{on:true,q:2}, yw_bt6:{on:true,q:2},
+      yw_bt8:{on:true,q:2}, yw_bt9:{on:true,q:1},
+      yw_tl1:{on:true,q:1}, yw_tl2:{on:true,q:1},
+      yw_wp1:{on:true,q:1},
+      yw_fl7:{on:true,q:1},
+      yw_el1:{on:true,q:1}, yw_el2:{on:true,q:1}, yw_el4:{on:true,q:1},
+      yw_fu1:{on:true,q:1}, yw_fu2:{on:true,q:1}, yw_fu3:{on:true,q:1}, yw_fu5:{on:true,q:2},
+      yw_etc1:{on:true,q:1}, yw_etc2:{on:true,q:1}, yw_etc3:{on:true,q:1}, yw_etc4:{on:true,q:1},
+    }
+  },
+  B: {
+    label: 'B형 — 확장 풀공사',
+    desc: '32평 거실+방 확장 · 창호교체 · 마루 · 싱크대 프리미엄',
+    color: '#16a34a',
+    ids: {
+      yw_dem_labor:{on:true,q:5}, yw_dem1:{on:true,q:1}, yw_dem2:{on:true,q:1},
+      yw_dem3:{on:true,q:1}, yw_dem4:{on:true,q:1}, yw_dem5:{on:true,q:1},
+      yw_dem7:{on:true,q:1},
+      yw_plm1:{on:true,q:1}, yw_plm2:{on:true,q:2}, yw_plm5:{on:true,q:1},
+      yw_win1:{on:true,q:1}, yw_win3:{on:true,q:2}, yw_win5:{on:true,q:1},
+      yw_mid2:{on:true,q:1},
+      yw_carp0:{on:true,q:3}, yw_carp1s:{on:true,q:7}, yw_carp3:{on:true,q:1}, yw_carp5:{on:true,q:1},
+      yw_bt1:{on:true,q:2}, yw_bt2:{on:true,q:2}, yw_bt3:{on:true,q:2},
+      yw_bt4:{on:true,q:2}, yw_bt5:{on:true,q:2}, yw_bt6:{on:true,q:2},
+      yw_bt7:{on:true,q:1}, yw_bt8:{on:true,q:2}, yw_bt9:{on:true,q:1},
+      yw_tl1:{on:true,q:1}, yw_tl2:{on:true,q:1}, yw_tl3:{on:true,q:2},
+      yw_wp1:{on:true,q:1},
+      yw_fl3:{on:true,q:1},
+      yw_el1:{on:true,q:1}, yw_el2:{on:true,q:1}, yw_el3:{on:true,q:1}, yw_el4:{on:true,q:1},
+      yw_fu1p:{on:true,q:1}, yw_fu2:{on:true,q:1}, yw_fu3:{on:true,q:1}, yw_fu5:{on:true,q:2},
+      yw_etc1:{on:true,q:1}, yw_etc2:{on:true,q:1}, yw_etc3:{on:true,q:1}, yw_etc4:{on:true,q:1},
+    }
+  },
+  C: {
+    label: 'C형 — 맞춤 견적',
+    desc: '원하는 항목만 직접 선택해서 구성',
+    color: '#d97706',
+    ids: {}
+  }
+};
+
 // 전기·조명 패키지 상태
 let elecPkg = { type: null }; // type: 'basic'|'standard'|'premium'|null
 // 계약금 비율 설정 (합계 100이어야 함)
@@ -135,19 +194,137 @@ function renderItems() {
   const catData = DATA[curCat];
   const colorClass = CAT_COLORS[curCat] || 'cat-gray';
   const isYangu = curCat === '양우아파트';
-  let html = `<div class="items cat-zone ${colorClass}${isYangu?' yangu-zone':''}">`;
-  catData.items.forEach(it => { html += renderItem(it); });
-  html += '</div>';
-  document.getElementById('content').innerHTML = html;
 
-  // 양우 탭 진입 시 평수 105㎡(32평) 고정 안내
   if (isYangu) {
+    // 양우 탭: 아코디언 방식
+    let html = renderYanguSelector() + `<div class="yangu-accordion cat-zone ${colorClass}">`;
+    let currentGroup = null;
+    let groupItems = [];
+    let currentDivId = null;
+
+    const flush = () => {
+      if (!currentGroup) return;
+      const isOpen = yanguOpen[currentDivId] !== false; // 기본 열림
+      const selCount = groupItems.filter(it => sel[it.id]?.on || isSpecialOn(it)).length;
+      const selAmt = groupItems.reduce((s, it) => s + getItemAmt(it), 0);
+
+      html += `<div class="yacc-section${isOpen?' open':''}">
+        <div class="yacc-header" onclick="toggleYangu('${currentDivId}')">
+          <span class="yacc-title">${currentGroup}</span>
+          <div class="yacc-meta">
+            ${selCount > 0 ? `<span class="yacc-sel-badge">${selCount}개 선택</span>` : ''}
+            ${selAmt > 0 ? `<span class="yacc-amt">${fmt(selAmt)}원</span>` : ''}
+          </div>
+          <span class="yacc-arrow">${isOpen ? '▲' : '▼'}</span>
+        </div>
+        <div class="yacc-body">
+          <div class="items">
+            ${groupItems.map(it => renderItem(it)).join('')}
+          </div>
+        </div>
+      </div>`;
+      groupItems = [];
+    };
+
+    catData.items.forEach(it => {
+      if (it.type === 'divider') {
+        flush();
+        currentGroup = it.label || '';
+        currentDivId = it.id;
+        if (!(it.id in yanguOpen)) yanguOpen[it.id] = true; // 기본 열림
+      } else {
+        groupItems.push(it);
+      }
+    });
+    flush();
+    html += '</div>';
+    document.getElementById('content').innerHTML = html;
+
+    // 평수 고정
     const pyEl = document.getElementById('pyung');
     if (pyEl && pyEl.value != 32) {
       pyEl.value = 32;
       document.getElementById('sqm').textContent = '(105㎡ 고정)';
     }
+  } else {
+    // 일반 탭: 기존 방식
+    let html = `<div class="items cat-zone ${colorClass}">`;
+    catData.items.forEach(it => { html += renderItem(it); });
+    html += '</div>';
+    document.getElementById('content').innerHTML = html;
   }
+}
+
+function isSpecialOn(it) {
+  if (it.type === 'bath-rooms') return bathRooms.length > 0;
+  if (it.type === 'elec-pkg') return !!elecPkg.type;
+  if (it.type === 'bath-demo') return bathDemoState.living || bathDemoState.master;
+  return false;
+}
+
+function getItemAmt(it) {
+  const s = sel[it.id];
+  if (!s?.on && !isSpecialOn(it)) return 0;
+  if (it.pct) return 0;
+  if (it.type === 'bath-rooms') return bathRooms.reduce((sum,r) => sum + calcBathRoomAmt(r), 0);
+  if (it.type === 'elec-pkg') return elecPkg.type ? getElecPrice(getPyung(), elecPkg.type) : 0;
+  if (it.type === 'cat-extra') { const st = catExtraState[it.id]; return st ? (st.amt||0)-(st.nego||0) : 0; }
+  if (it.type === 'input') return s.val || 0;
+  if (it.type === 'select-price') { const opt = it.options?.[s.selectIdx]; return opt?.p || 0; }
+  return (it.p || 0) * (s.q || 1);
+}
+
+function toggleYangu(divId) {
+  yanguOpen[divId] = !yanguOpen[divId];
+  renderItems(); calc();
+}
+
+/* ════════ 양우 템플릿 선택 UI ════════ */
+function renderYanguSelector() {
+  const btns = Object.entries(YANGU_TEMPLATES).map(([key, t]) => {
+    const isOn = yanguTemplate === key;
+    return `<button class="yangu-tmpl-btn${isOn?' active':''}"
+      style="${isOn?'background:'+t.color+';color:#fff;border-color:'+t.color:''}"
+      onclick="event.stopPropagation();applyYanguTemplate('${key}')">
+      <span class="yangu-tmpl-key">${t.label}</span>
+      <span class="yangu-tmpl-desc">${t.desc}</span>
+    </button>`;
+  }).join('');
+
+  const resetBtn = yanguTemplate
+    ? `<button class="yangu-tmpl-reset" onclick="event.stopPropagation();resetYanguTemplate()">✕ 초기화</button>` : '';
+
+  return `<div class="yangu-selector" onclick="event.stopPropagation()">
+    <div class="yangu-selector-title">📋 견적 유형 선택</div>
+    <div class="yangu-tmpl-btns">${btns}</div>
+    ${resetBtn}
+    ${yanguTemplate ? `<div class="yangu-tmpl-note">선택된 항목을 자유롭게 추가/제거할 수 있습니다</div>` : ''}
+  </div>`;
+}
+
+function applyYanguTemplate(key) {
+  yanguTemplate = key;
+  const tmpl = YANGU_TEMPLATES[key];
+  // 모든 양우 항목 초기화
+  Object.values(DATA['양우아파트'].items).forEach(it => {
+    if (sel[it.id]) sel[it.id].on = false;
+  });
+  // 템플릿 항목 적용
+  Object.entries(tmpl.ids).forEach(([id, state]) => {
+    if (sel[id]) {
+      sel[id].on = state.on;
+      sel[id].q  = state.q || 1;
+    }
+  });
+  renderItems(); calc();
+}
+
+function resetYanguTemplate() {
+  yanguTemplate = null;
+  Object.values(DATA['양우아파트'].items).forEach(it => {
+    if (sel[it.id]) { sel[it.id].on = false; sel[it.id].q = 1; }
+  });
+  renderItems(); calc();
 }
 
 function renderItem(it) {

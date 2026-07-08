@@ -920,3 +920,197 @@ h1 { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -.4px; marg
   border-color: #7c3aed;
   color: #7c3aed;
 }
+
+/* ════════ 양우아파트 아코디언 ════════ */
+.yangu-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 섹션 카드 */
+.yacc-section {
+  background: var(--bg);
+  border: 1.5px solid #c4b5fd;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: box-shadow .15s;
+}
+.yacc-section:hover { box-shadow: var(--shadow-md); }
+.yacc-section.open { border-color: #7c3aed; }
+
+/* 헤더 클릭 영역 */
+.yacc-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  cursor: pointer;
+  user-select: none;
+  background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%);
+  transition: background .15s;
+}
+.yacc-header:hover { background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%); }
+.yacc-section.open .yacc-header { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); }
+
+.yacc-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #4c1d95;
+  flex: 1;
+}
+.yacc-section.open .yacc-title { color: #fff; }
+
+.yacc-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.yacc-sel-badge {
+  font-size: 10px;
+  font-weight: 700;
+  background: #7c3aed;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+}
+.yacc-section.open .yacc-sel-badge {
+  background: rgba(255,255,255,.25);
+  color: #fff;
+}
+
+.yacc-amt {
+  font-size: 12px;
+  font-weight: 800;
+  color: #7c3aed;
+}
+.yacc-section.open .yacc-amt { color: #e9d5ff; }
+
+.yacc-arrow {
+  font-size: 11px;
+  color: #7c3aed;
+  transition: transform .2s;
+  flex-shrink: 0;
+}
+.yacc-section.open .yacc-arrow { color: rgba(255,255,255,.8); }
+
+/* 바디 — 접힐 때 height:0 */
+.yacc-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .3s ease;
+}
+.yacc-section.open .yacc-body {
+  max-height: 3000px; /* 충분히 큰 값 */
+}
+
+.yacc-body .items {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* 양우 내부 카드 선택 색상 */
+.yangu-accordion .item.sel {
+  border-color: #7c3aed;
+  background: #faf5ff;
+  box-shadow: 0 0 0 2px rgba(124,58,237,.12);
+}
+.yangu-accordion .item.sel .chk {
+  background: #7c3aed;
+  border-color: #7c3aed;
+}
+.yangu-accordion .qbtn:hover {
+  background: #ede9fe;
+  border-color: #7c3aed;
+  color: #7c3aed;
+}
+
+/* ════════ 양우 템플릿 선택 ════════ */
+.yangu-selector {
+  background: #fff;
+  border: 2px solid #c4b5fd;
+  border-radius: var(--r-lg);
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 16px rgba(124,58,237,.1);
+}
+
+.yangu-selector-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #4c1d95;
+  margin-bottom: 12px;
+  letter-spacing: -.2px;
+}
+
+.yangu-tmpl-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.yangu-tmpl-btn {
+  flex: 1;
+  min-width: 180px;
+  padding: 12px 14px;
+  border: 2px solid #ddd6fe;
+  border-radius: var(--r-md);
+  background: #faf5ff;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all .18s;
+  user-select: none;
+}
+.yangu-tmpl-btn:hover {
+  border-color: #7c3aed;
+  background: #f3e8ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(124,58,237,.18);
+}
+.yangu-tmpl-btn.active {
+  box-shadow: 0 4px 14px rgba(0,0,0,.2);
+  transform: translateY(-1px);
+}
+
+.yangu-tmpl-key {
+  font-size: 13px;
+  font-weight: 800;
+  display: block;
+}
+.yangu-tmpl-desc {
+  font-size: 10px;
+  font-weight: 400;
+  opacity: .8;
+  display: block;
+  line-height: 1.4;
+}
+
+.yangu-tmpl-reset {
+  margin-top: 10px;
+  font-size: 11px;
+  padding: 5px 12px;
+  border: 1px solid #c4b5fd;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: #7c3aed;
+  cursor: pointer;
+  transition: all .15s;
+}
+.yangu-tmpl-reset:hover { background: #f3e8ff; }
+
+.yangu-tmpl-note {
+  font-size: 10px;
+  color: #7c3aed;
+  margin-top: 8px;
+  padding: 4px 8px;
+  background: #f5f3ff;
+  border-radius: var(--r-sm);
+  border-left: 3px solid #7c3aed;
+}
