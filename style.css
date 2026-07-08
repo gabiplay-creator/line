@@ -780,3 +780,67 @@ h1 { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -.4px; marg
   pointer-events: none;
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ════════ 계약 비율 설정 ════════ */
+.pay-ratio-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.pay-ratio-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  white-space: nowrap;
+}
+.pay-ratio-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+.pay-ratio-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+.pay-ratio-field label {
+  font-size: 9px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+.pay-ratio-field input {
+  width: 60px;
+  height: 30px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  color: #1e3a5f;
+  background: #fff;
+  outline: none;
+  transition: border-color .15s;
+}
+.pay-ratio-field input:focus { border-color: #2563eb; }
+.pay-ratio-plus { font-size: 16px; font-weight: 700; color: #94a3b8; }
+.pay-ratio-eq { font-size: 13px; font-weight: 600; color: #475569; white-space: nowrap; }
+.pay-ratio-eq strong { color: #16a34a; }
+.pay-ratio-err {
+  font-size: 11px;
+  font-weight: 600;
+  color: #dc2626;
+  width: 100%;
+}
+
+@media print { .pay-ratio-box { display: none !important; } }

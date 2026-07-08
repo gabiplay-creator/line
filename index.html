@@ -102,11 +102,33 @@
         <tr class="qfoot-total"><td colspan="5" class="qfoot-label">총 공사 금액</td><td class="qfoot-val" id="qf-total-d"></td></tr>
       </tfoot>
     </table>
+    <!-- 계약 비율 설정 -->
+    <div class="pay-ratio-box">
+      <span class="pay-ratio-title">💰 계약 조건 비율 설정</span>
+      <div class="pay-ratio-inputs">
+        <div class="pay-ratio-field">
+          <label>계약금 (%)</label>
+          <input type="number" id="pay-deposit" value="10" min="0" max="100" oninput="updatePayRatio()">
+        </div>
+        <span class="pay-ratio-plus">+</span>
+        <div class="pay-ratio-field">
+          <label>중도금 (%)</label>
+          <input type="number" id="pay-mid" value="40" min="0" max="100" oninput="updatePayRatio()">
+        </div>
+        <span class="pay-ratio-plus">+</span>
+        <div class="pay-ratio-field">
+          <label>잔금 (%)</label>
+          <input type="number" id="pay-final" value="50" min="0" max="100" oninput="updatePayRatio()">
+        </div>
+        <span class="pay-ratio-eq">= <strong id="pay-sum">100</strong>%</span>
+      </div>
+      <span id="pay-ratio-err" class="pay-ratio-err"></span>
+    </div>
     <table class="qcontract-table">
       <tr>
-        <td class="qc-label">계약금 (20%)</td><td class="qc-val" id="qc-deposit-d"></td>
-        <td class="qc-label">1차 중도금 (30%)</td><td class="qc-val" id="qc-mid-d"></td>
-        <td class="qc-label">잔금 (50%)</td><td class="qc-val" id="qc-final-d"></td>
+        <td class="qc-label qc-label-deposit">계약금 (10%)</td><td class="qc-val" id="qc-deposit-d"></td>
+        <td class="qc-label qc-label-mid">중도금 (40%)</td><td class="qc-val" id="qc-mid-d"></td>
+        <td class="qc-label qc-label-final">잔금 (50%)</td><td class="qc-val" id="qc-final-d"></td>
       </tr>
     </table>
     <div class="qdoc-footer">
@@ -139,9 +161,9 @@
     </table>
     <table class="qcontract-table">
       <tr>
-        <td class="qc-label">계약금 (20%)</td><td class="qc-val" id="qc-deposit-s"></td>
-        <td class="qc-label">1차 중도금 (30%)</td><td class="qc-val" id="qc-mid-s"></td>
-        <td class="qc-label">잔금 (50%)</td><td class="qc-val" id="qc-final-s"></td>
+        <td class="qc-label qc-label-deposit">계약금 (10%)</td><td class="qc-val" id="qc-deposit-s"></td>
+        <td class="qc-label qc-label-mid">중도금 (40%)</td><td class="qc-val" id="qc-mid-s"></td>
+        <td class="qc-label qc-label-final">잔금 (50%)</td><td class="qc-val" id="qc-final-s"></td>
       </tr>
     </table>
     <div class="qdoc-footer">
@@ -170,6 +192,20 @@ function syncSimpleInfo() {
   if(qc2) qc2.textContent = `${n} / ${p}`;
   if(qa2) qa2.textContent = a;
 }
+</script>
+<script>
+// 비율 합계 실시간 표시
+['pay-deposit','pay-mid','pay-final'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('input', () => {
+    const d = parseInt(document.getElementById('pay-deposit')?.value)||0;
+    const m = parseInt(document.getElementById('pay-mid')?.value)||0;
+    const f = parseInt(document.getElementById('pay-final')?.value)||0;
+    const sum = d+m+f;
+    const sumEl = document.getElementById('pay-sum');
+    if(sumEl) { sumEl.textContent = sum; sumEl.style.color = sum===100?'#16a34a':'#dc2626'; }
+  });
+});
 </script>
 </body>
 </html>

@@ -13,6 +13,8 @@ let bathWaterList = []; // 레거시 — 더 이상 사용 안 함
 let wallPaperName = ''; // 도배지명 메모
 // 전기·조명 패키지 상태
 let elecPkg = { type: null }; // type: 'basic'|'standard'|'premium'|null
+// 계약금 비율 설정 (합계 100이어야 함)
+let payRatio = { deposit: 10, mid: 40, final: 50 }; // % 단위
 // 욕실 철거: { living: false, master: false } — 거실/안방 각각
 let bathDemoState = { living: false, master: false };
 // 카테고리별 기타/네고: { [id]: { text:'', amt:0, nego:0 } }
@@ -1123,9 +1125,21 @@ function renderQuoteDoc(totals) {
   ['qf-vat-d','qf-vat-s'].forEach(id => document.getElementById(id).textContent = fmtW(vatAfterNego));
   ['qf-total-d','qf-total-s'].forEach(id => document.getElementById(id).textContent = fmtW(totalAfterNego));
 
-  ['qc-deposit-d','qc-deposit-s'].forEach(id => document.getElementById(id).textContent = fmtW(Math.round(totalAfterNego*0.2)));
-  ['qc-mid-d','qc-mid-s'].forEach(id => document.getElementById(id).textContent = fmtW(Math.round(totalAfterNego*0.3)));
-  ['qc-final-d','qc-final-s'].forEach(id => document.getElementById(id).textContent = fmtW(Math.round(totalAfterNego*0.5)));
+  const r = payRatio;
+  const dep = Math.round(totalAfterNego * r.deposit / 100);
+  const mid = Math.round(totalAfterNego * r.mid / 100);
+  const fin = Math.round(totalAfterNego * r.final / 100);
+  // 라벨도 비율 표시로 갱신
+  document.querySelectorAll('.qc-label-deposit').forEach(el => el.textContent = `계약금 (${r.deposit}%)`);
+  document.querySelectorAll('.qc-label-mid').forEach(el => el.textContent = `중도금 (${r.mid}%)`);
+  document.querySelectorAll('.qc-label-final').forEach(el => el.textContent = `잔금 (${r.final}%)`);
+  ['qc-deposit-d','qc-deposit-s'].forEach(id => document.getElementById(id).textContent = fmtW(dep));
+  ['qc-mid-d','qc-mid-s'].forEach(id => document.getElementById(id).textContent = fmtW(mid));
+  ['qc-final-d','qc-final-s'].forEach(id => document.getElementById(id).textContent = fmtW(fin));
+  // 비율 입력창 동기화
+  const di = document.getElementById('pay-deposit'); if(di) di.value = r.deposit;
+  const mi = document.getElementById('pay-mid');     if(mi) mi.value = r.mid;
+  const fi = document.getElementById('pay-final');   if(fi) fi.value = r.final;
 }
 
 /* ════════ 인쇄 모드 ════════ */
@@ -1174,8 +1188,9 @@ function downloadExcel() {
   d.push(['부가세 (10%)','','','','',vatAfterNego]);
   d.push(['총 공사 금액','','','','',totalAfterNego]);
   d.push([]);
-  d.push(['계약금 (20%)', Math.round(totalAfterNego*0.2), '', '1차 중도금 (30%)', Math.round(totalAfterNego*0.3), '잔금 (50%)']);
-  d.push(['', '', '', '', '', Math.round(totalAfterNego*0.5)]);
+  const er = payRatio;
+  d.push([`계약금 (${er.deposit}%)`, Math.round(totalAfterNego*er.deposit/100), '', `중도금 (${er.mid}%)`, Math.round(totalAfterNego*er.mid/100), `잔금 (${er.final}%)`]);
+  d.push(['', '', '', '', '', Math.round(totalAfterNego*er.final/100)]);
   d.push([]);
   d.push(['* 부가세 별도 견적입니다.']);
   d.push(['* 본 업체는 전문 기공 인력만 시공합니다.']);
@@ -1221,6 +1236,22 @@ function applyNumFmt(ws, data) {
   }));
 }
 
+/* ════════ 계약 비율 설정 ════════ */
+function updatePayRatio() {
+  const d = parseInt(document.getElementById('pay-deposit')?.value) || 0;
+  const m = parseInt(document.getElementById('pay-mid')?.value) || 0;
+  const f = parseInt(document.getElementById('pay-final')?.value) || 0;
+  const sum = d + m + f;
+  const errEl = document.getElementById('pay-ratio-err');
+  if (sum !== 100) {
+    if (errEl) errEl.textContent = `합계 ${sum}% — 100%가 되어야 합니다`;
+    return;
+  }
+  if (errEl) errEl.textContent = '';
+  payRatio = { deposit: d, mid: m, final: f };
+  renderQuoteDoc();
+}
+
 /* ════════ 저장 / 불러오기 / 공유 ════════ */
 
 function getSnapshot() {
@@ -1241,6 +1272,7 @@ function getSnapshot() {
     wallPaperName,
     elecPkg: JSON.parse(JSON.stringify(elecPkg)),
     negoAmt,
+    payRatio: JSON.parse(JSON.stringify(payRatio)),
     floorDemoSel: JSON.parse(JSON.stringify(floorDemoSel)),
   };
 }
@@ -1262,6 +1294,7 @@ function applySnapshot(snap) {
   wallPaperName = snap.wallPaperName || '';
   elecPkg       = snap.elecPkg || { type: null };
   negoAmt       = snap.negoAmt || 0;
+  if (snap.payRatio) payRatio = snap.payRatio;
   Object.assign(floorDemoSel, snap.floorDemoSel || {});
   renderTabs(); renderItems(); calc(); syncSimpleInfo?.();
 }
