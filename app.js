@@ -990,11 +990,20 @@ function calcTotals() {
     ? { '양우아파트': DATA['양우아파트'] }
     : Object.fromEntries(Object.entries(DATA).filter(([k]) => k !== '양우아파트'));
 
+  // 양우 모드에서 현재 섹션 추적 (divider label을 catName으로 사용)
+  let yanguCurrentSection = '양우아파트';
+
   Object.entries(dataToCalc).forEach(([catName, cat]) => {
     cat.items.forEach(it => {
       if (it.pct) return;
-      if (it.type === 'divider') return;
+      if (it.type === 'divider') {
+        // 양우 모드에서 섹션명을 catName으로 사용
+        if (isYanguMode && it.label) yanguCurrentSection = it.label;
+        return;
+      }
       const s = sel[it.id];
+      // 양우 모드에서는 섹션별 catName 사용
+      const effectiveCatName = isYanguMode ? yanguCurrentSection : catName;
 
       // cat-extra / bath-rooms / bath-water 는 s.on 체크 없이 항상 계산
       if (it.type === 'cat-extra') {
@@ -1004,14 +1013,14 @@ function calcTotals() {
         const extraNego = st.nego || 0;
         if (!extraAmt && !extraNego) return;
         if (extraAmt > 0) {
-          catMap[catName] = (catMap[catName]||0) + extraAmt;
+          catMap[effectiveCatName] = (catMap[effectiveCatName]||0) + extraAmt;
           baseSub += extraAmt;
-          rows.push({ catName, label: st.text || '기타', detail:'직접 입력', qty:1, u:'식', unitP:extraAmt, amt:extraAmt });
+          rows.push({ catName: effectiveCatName, label: st.text || '기타', detail:'직접 입력', qty:1, u:'식', unitP:extraAmt, amt:extraAmt });
         }
         if (extraNego > 0) {
-          catMap[catName] = (catMap[catName]||0) - extraNego;
+          catMap[effectiveCatName] = (catMap[effectiveCatName]||0) - extraNego;
           baseSub -= extraNego;
-          rows.push({ catName, label: `네고 (${st.negoText||'할인'})`, detail:'차감', qty:1, u:'식', unitP:-extraNego, amt:-extraNego });
+          rows.push({ catName: effectiveCatName, label: `네고 (${st.negoText||'할인'})`, detail:'차감', qty:1, u:'식', unitP:-extraNego, amt:-extraNego });
         }
         return;
       }
@@ -1023,14 +1032,14 @@ function calcTotals() {
           if (!a) return;
           const BPRICES_B = { std:2900000, high:4300000, prem:5200000 };
           const baseA = BPRICES_B[r.type] || 0;
-          rows.push({ catName, label:`욕실 ${i+1} — ${BLABELS[r.type]}`, detail:'기본', qty:1, u:'실', unitP:baseA, amt:baseA });
+          rows.push({ catName: effectiveCatName, label:`욕실 ${i+1} — ${BLABELS[r.type]}`, detail:'기본', qty:1, u:'실', unitP:baseA, amt:baseA });
           BATH_OPTS.forEach(o => {
-            if (r.opts[o.key]) rows.push({ catName, label:`욕실 ${i+1} — ${o.label}`, detail:'', qty:1, u:'개', unitP:o.p, amt:o.p });
+            if (r.opts[o.key]) rows.push({ catName: effectiveCatName, label:`욕실 ${i+1} — ${o.label}`, detail:'', qty:1, u:'개', unitP:o.p, amt:o.p });
           });
           const fan = BATH_FAN_OPTS[r.opts.fan];
-          if (fan && fan.p > 0) rows.push({ catName, label:`욕실 ${i+1} — ${fan.label}`, detail:'환풍기', qty:1, u:'개', unitP:fan.p, amt:fan.p });
+          if (fan && fan.p > 0) rows.push({ catName: effectiveCatName, label:`욕실 ${i+1} — ${fan.label}`, detail:'환풍기', qty:1, u:'개', unitP:fan.p, amt:fan.p });
           // ★ catMap/baseSub 합산
-          catMap[catName] = (catMap[catName]||0) + a;
+          catMap[effectiveCatName] = (catMap[effectiveCatName]||0) + a;
           baseSub += a;
         });
         return;
@@ -1048,9 +1057,9 @@ function calcTotals() {
         const a = getElecPrice(py, elecPkg.type);
         if (!a) return;
         const typeLabel = ELEC_TYPES.find(t=>t.key===elecPkg.type)?.label || '';
-        catMap[catName] = (catMap[catName]||0) + a;
+        catMap[effectiveCatName] = (catMap[effectiveCatName]||0) + a;
         baseSub += a;
-        rows.push({ catName, label:`전기·조명 ${typeLabel} 패키지`, detail:`${getPyungLabel(py)} 기준`, qty:1, u:'식', unitP:a, amt:a });
+        rows.push({ catName: effectiveCatName, label:`전기·조명 ${typeLabel} 패키지`, detail:`${getPyungLabel(py)} 기준`, qty:1, u:'식', unitP:a, amt:a });
         return;
       }
 
@@ -1058,14 +1067,14 @@ function calcTotals() {
         // 욕실 철거 계산
         const BATH_DEMO_P = 800000;
         if (bathDemoState.living) {
-          catMap[catName] = (catMap[catName]||0) + BATH_DEMO_P;
+          catMap[effectiveCatName] = (catMap[effectiveCatName]||0) + BATH_DEMO_P;
           baseSub += BATH_DEMO_P;
-          rows.push({ catName, label:'욕실 철거 — 거실 욕실', detail:'올철거', qty:1, u:'개소', unitP:BATH_DEMO_P, amt:BATH_DEMO_P });
+          rows.push({ catName: effectiveCatName, label:'욕실 철거 — 거실 욕실', detail:'올철거', qty:1, u:'개소', unitP:BATH_DEMO_P, amt:BATH_DEMO_P });
         }
         if (bathDemoState.master) {
-          catMap[catName] = (catMap[catName]||0) + BATH_DEMO_P;
+          catMap[effectiveCatName] = (catMap[effectiveCatName]||0) + BATH_DEMO_P;
           baseSub += BATH_DEMO_P;
-          rows.push({ catName, label:'욕실 철거 — 안방 욕실', detail:'올철거', qty:1, u:'개소', unitP:BATH_DEMO_P, amt:BATH_DEMO_P });
+          rows.push({ catName: effectiveCatName, label:'욕실 철거 — 안방 욕실', detail:'올철거', qty:1, u:'개소', unitP:BATH_DEMO_P, amt:BATH_DEMO_P });
         }
         return;
       }
@@ -1081,9 +1090,9 @@ function calcTotals() {
         const count = autoCount + adj;
         const a = count * 250000;
         if (!a) return;
-        catMap[catName] = (catMap[catName]||0) + a;
+        catMap[effectiveCatName] = (catMap[effectiveCatName]||0) + a;
         baseSub += a;
-        rows.push({ catName, label:'인건비', detail:`${py}평 기준 ${count}품`, qty:count, u:'품', unitP:250000, amt:a });
+        rows.push({ catName: effectiveCatName, label:'인건비', detail:`${py}평 기준 ${count}품`, qty:count, u:'품', unitP:250000, amt:a });
         return;
       }
 
@@ -1094,9 +1103,9 @@ function calcTotals() {
         const count = Math.max(1, autoCount + adj);
         const a = count * 450000;
         if (!a) return;
-        catMap[catName] = (catMap[catName]||0) + a;
+        catMap[effectiveCatName] = (catMap[effectiveCatName]||0) + a;
         baseSub += a;
-        rows.push({ catName, label:'폐기물', detail:`${py}평 기준 ${count}대`, qty:count, u:'대', unitP:450000, amt:a });
+        rows.push({ catName: effectiveCatName, label:'폐기물', detail:`${py}평 기준 ${count}대`, qty:count, u:'대', unitP:450000, amt:a });
         return;
       }
 
@@ -1108,9 +1117,9 @@ function calcTotals() {
           if (!fs.on) return;
           const a = ft.p * fs.q;
           amt += a;
-          rows.push({ catName, label: `마루 철거 — ${ft.n}`, detail:'', qty:fs.q, u:(ft.u||'평'), unitP:ft.p, amt:a });
+          rows.push({ catName: effectiveCatName, label: `마루 철거 — ${ft.n}`, detail:'', qty:fs.q, u:(ft.u||'평'), unitP:ft.p, amt:a });
         });
-        if (amt > 0) catMap[catName] = (catMap[catName]||0) + amt;
+        if (amt > 0) catMap[effectiveCatName] = (catMap[effectiveCatName]||0) + amt;
         baseSub += amt;
         return;
       }
@@ -1132,9 +1141,9 @@ function calcTotals() {
       }
 
       if (!amt) return;
-      catMap[catName] = (catMap[catName]||0) + amt;
+      catMap[effectiveCatName] = (catMap[effectiveCatName]||0) + amt;
       baseSub += amt;
-      rows.push({ catName, label: it.n, detail, qty: qtyLabel, u: it.u, unitP, amt });
+      rows.push({ catName: effectiveCatName, label: it.n, detail, qty: qtyLabel, u: it.u, unitP, amt });
     });
   });
 
@@ -1144,9 +1153,9 @@ function calcTotals() {
       const t = BATH_WATER_TYPES.find(t=>t.key===r.type);
       if (!t) return;
       const a = t.p;
-      catMap['설비'] = (catMap['설비']||0) + a;
+      catMap[isYanguMode ? yanguCurrentSection : '설비'] = (catMap[isYanguMode ? yanguCurrentSection : '설비']||0) + a;
       baseSub += a;
-      rows.push({ catName:'설비', label:`화장실 방수 ${i+1}개소 — ${t.label}`, detail:t.desc, qty:1, u:'개소', unitP:a, amt:a });
+      rows.push({ catName: isYanguMode ? '② 설비' : '설비', label:`화장실 방수 ${i+1}개소 — ${t.label}`, detail:t.desc, qty:1, u:'개소', unitP:a, amt:a });
     });
   }
 
@@ -1158,9 +1167,9 @@ function calcTotals() {
     const comboQty = Math.min(w1.q, w2.q);
     const discount = comboQty * 200000; // 개소당 20만 할인
     if (discount > 0) {
-      catMap['설비'] = (catMap['설비'] || 0) - discount;
+      catMap[isYanguMode ? yanguCurrentSection : '설비'] = (catMap[isYanguMode ? yanguCurrentSection : '설비'] || 0) - discount;
       baseSub -= discount;
-      rows.push({ catName:'설비', label:'욕실 방수 동시선택 할인', detail:`1차+2~3차 ${comboQty}개소`, qty:comboQty, u:'개소', unitP:-200000, amt:-discount });
+      rows.push({ catName: isYanguMode ? '② 설비' : '설비', label:'욕실 방수 동시선택 할인', detail:`1차+2~3차 ${comboQty}개소`, qty:comboQty, u:'개소', unitP:-200000, amt:-discount });
     }
   }
 
@@ -1182,7 +1191,7 @@ function calcTotals() {
     const discount       = currentCharged - correctAmt;
 
     if (discount > 0) {
-      catMap['설비'] = (catMap['설비'] || 0) - discount;
+      catMap[isYanguMode ? yanguCurrentSection : '설비'] = (catMap[isYanguMode ? yanguCurrentSection : '설비'] || 0) - discount;
       baseSub -= discount;
       rows.push({
         catName: '설비',
@@ -1201,9 +1210,9 @@ function calcTotals() {
       const s = sel[it.id];
       if (!s?.on) return;
       const amt = Math.round(baseSub * it.pct);
-      catMap[catName] = (catMap[catName]||0) + amt;
+      catMap[effectiveCatName] = (catMap[effectiveCatName]||0) + amt;
       pctSub += amt;
-      rows.push({ catName, label: it.n, detail:`합계 ${fmt(baseSub)}원의 ${(it.pct*100).toFixed(0)}%`, qty:1, u:'식', unitP:amt, amt });
+      rows.push({ catName: effectiveCatName, label: it.n, detail:`합계 ${fmt(baseSub)}원의 ${(it.pct*100).toFixed(0)}%`, qty:1, u:'식', unitP:amt, amt });
     });
   });
 
