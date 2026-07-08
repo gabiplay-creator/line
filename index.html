@@ -54,6 +54,29 @@
     <p class="note">* 부가세 별도 / 실제 견적은 현장 방문 후 변동 가능</p>
   </div>
 
+  <!-- 계약 조건 비율 설정 -->
+  <div class="pay-ratio-box-outer">
+    <span class="pay-ratio-title">💰 계약 조건 비율 설정</span>
+    <div class="pay-ratio-inputs">
+      <div class="pay-ratio-field">
+        <label>계약금 (%)</label>
+        <input type="number" id="pay-deposit" value="10" min="0" max="100" oninput="updatePayRatio()">
+      </div>
+      <span class="pay-ratio-plus">+</span>
+      <div class="pay-ratio-field">
+        <label>중도금 (%)</label>
+        <input type="number" id="pay-mid" value="40" min="0" max="100" oninput="updatePayRatio()">
+      </div>
+      <span class="pay-ratio-plus">+</span>
+      <div class="pay-ratio-field">
+        <label>잔금 (%)</label>
+        <input type="number" id="pay-final" value="50" min="0" max="100" oninput="updatePayRatio()">
+      </div>
+      <span class="pay-ratio-eq">= <strong id="pay-sum">100</strong>%</span>
+    </div>
+    <span id="pay-ratio-err" class="pay-ratio-err"></span>
+  </div>
+
   <!-- 견적서 액션 버튼 -->
   <div class="quote-actions">
     <div class="quote-actions-label">저장 / 불러오기 / 공유</div>
@@ -102,28 +125,6 @@
         <tr class="qfoot-total"><td colspan="5" class="qfoot-label">총 공사 금액</td><td class="qfoot-val" id="qf-total-d"></td></tr>
       </tfoot>
     </table>
-    <!-- 계약 비율 설정 -->
-    <div class="pay-ratio-box">
-      <span class="pay-ratio-title">💰 계약 조건 비율 설정</span>
-      <div class="pay-ratio-inputs">
-        <div class="pay-ratio-field">
-          <label>계약금 (%)</label>
-          <input type="number" id="pay-deposit" value="10" min="0" max="100" oninput="updatePayRatio()">
-        </div>
-        <span class="pay-ratio-plus">+</span>
-        <div class="pay-ratio-field">
-          <label>중도금 (%)</label>
-          <input type="number" id="pay-mid" value="40" min="0" max="100" oninput="updatePayRatio()">
-        </div>
-        <span class="pay-ratio-plus">+</span>
-        <div class="pay-ratio-field">
-          <label>잔금 (%)</label>
-          <input type="number" id="pay-final" value="50" min="0" max="100" oninput="updatePayRatio()">
-        </div>
-        <span class="pay-ratio-eq">= <strong id="pay-sum">100</strong>%</span>
-      </div>
-      <span id="pay-ratio-err" class="pay-ratio-err"></span>
-    </div>
     <table class="qcontract-table">
       <tr>
         <td class="qc-label qc-label-deposit">계약금 (10%)</td><td class="qc-val" id="qc-deposit-d"></td>

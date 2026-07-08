@@ -844,3 +844,22 @@ h1 { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -.4px; marg
 }
 
 @media print { .pay-ratio-box { display: none !important; } }
+
+/* ════════ 계약 비율 설정 (외부 배치) ════════ */
+.pay-ratio-box-outer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 20px 0;
+  padding: 12px 18px;
+  background: var(--bg);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+}
+
+/* 인쇄 시 숨김 (이미 위치가 밖이므로 확실히) */
+@media print {
+  .pay-ratio-box-outer { display: none !important; }
+}
