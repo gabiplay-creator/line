@@ -1249,6 +1249,12 @@ function updatePayRatio() {
   }
   if (errEl) errEl.textContent = '';
   payRatio = { deposit: d, mid: m, final: f };
+  // 비고 문구 동적 갱신
+  const noteText = `계약금 ${d}%, 중도금 ${m}%, 잔금 ${f}%`;
+  ['pay-note-d','pay-note-s'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = noteText;
+  });
   renderQuoteDoc();
 }
 
