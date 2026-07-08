@@ -1114,3 +1114,96 @@ h1 { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -.4px; marg
   border-radius: var(--r-sm);
   border-left: 3px solid #7c3aed;
 }
+
+/* ════════ 양우 독립 모드 ════════ */
+.hidden { display: none !important; }
+
+.tabs-row {
+  display: flex;
+  align-items: stretch;
+  background: var(--bg);
+  border-bottom: 1px solid var(--bd);
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+.tabs-row .tabs {
+  flex: 1;
+  border-bottom: none;
+  box-shadow: none;
+  position: static;
+}
+
+.yangu-switch-btn {
+  flex-shrink: 0;
+  padding: 0 18px;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  border-left: 1px solid var(--bd);
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: #fff;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+  letter-spacing: -.2px;
+}
+.yangu-switch-btn:hover { background: linear-gradient(135deg, #6d28d9, #5b21b6); }
+
+/* 양우 모드 헤더 */
+.yangu-mode-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #4c1d95, #7c3aed);
+  border-radius: 0;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.yangu-mode-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.yangu-mode-icon { font-size: 28px; }
+
+.yangu-mode-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -.3px;
+}
+
+.yangu-mode-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,.65);
+  margin-top: 2px;
+}
+
+.yangu-back-btn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 16px;
+  background: rgba(255,255,255,.15);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.yangu-back-btn:hover { background: rgba(255,255,255,.25); }
+
+#yangu-content {
+  padding: 12px 16px;
+  background: var(--bg3);
+  min-height: 200px;
+}
+
+@media (max-width:640px) {
+  .yangu-switch-btn { font-size: 11px; padding: 0 10px; }
+  .yangu-mode-header { padding: 10px 14px; }
+}

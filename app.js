@@ -14,6 +14,7 @@ let wallPaperName = ''; // 도배지명 메모
 // 양우아파트 아코디언 상태: divider id -> 열림 여부
 const yanguOpen = {}; // 양우 아코디언 열림 상태
 let yanguTemplate = null; // 선택된 템플릿
+let isYanguMode = false;   // 양우 독립 모드 여부
 
 // A/B/C형 기본 선택 항목
 const YANGU_TEMPLATES = {
@@ -195,64 +196,11 @@ function renderItems() {
   const colorClass = CAT_COLORS[curCat] || 'cat-gray';
   const isYangu = curCat === '양우아파트';
 
-  if (isYangu) {
-    // 양우 탭: 아코디언 방식
-    let html = renderYanguSelector() + `<div class="yangu-accordion cat-zone ${colorClass}">`;
-    let currentGroup = null;
-    let groupItems = [];
-    let currentDivId = null;
-
-    const flush = () => {
-      if (!currentGroup) return;
-      const isOpen = yanguOpen[currentDivId] !== false; // 기본 열림
-      const selCount = groupItems.filter(it => sel[it.id]?.on || isSpecialOn(it)).length;
-      const selAmt = groupItems.reduce((s, it) => s + getItemAmt(it), 0);
-
-      html += `<div class="yacc-section${isOpen?' open':''}">
-        <div class="yacc-header" onclick="toggleYangu('${currentDivId}')">
-          <span class="yacc-title">${currentGroup}</span>
-          <div class="yacc-meta">
-            ${selCount > 0 ? `<span class="yacc-sel-badge">${selCount}개 선택</span>` : ''}
-            ${selAmt > 0 ? `<span class="yacc-amt">${fmt(selAmt)}원</span>` : ''}
-          </div>
-          <span class="yacc-arrow">${isOpen ? '▲' : '▼'}</span>
-        </div>
-        <div class="yacc-body">
-          <div class="items">
-            ${groupItems.map(it => renderItem(it)).join('')}
-          </div>
-        </div>
-      </div>`;
-      groupItems = [];
-    };
-
-    catData.items.forEach(it => {
-      if (it.type === 'divider') {
-        flush();
-        currentGroup = it.label || '';
-        currentDivId = it.id;
-        if (!(it.id in yanguOpen)) yanguOpen[it.id] = true; // 기본 열림
-      } else {
-        groupItems.push(it);
-      }
-    });
-    flush();
-    html += '</div>';
-    document.getElementById('content').innerHTML = html;
-
-    // 평수 고정
-    const pyEl = document.getElementById('pyung');
-    if (pyEl && pyEl.value != 32) {
-      pyEl.value = 32;
-      document.getElementById('sqm').textContent = '(105㎡ 고정)';
-    }
-  } else {
-    // 일반 탭: 기존 방식
-    let html = `<div class="items cat-zone ${colorClass}">`;
-    catData.items.forEach(it => { html += renderItem(it); });
-    html += '</div>';
-    document.getElementById('content').innerHTML = html;
-  }
+  // 일반 탭: 기존 방식 (양우아파트는 별도 모드)
+  let html = `<div class="items cat-zone ${colorClass}">`;
+  catData.items.forEach(it => { html += renderItem(it); });
+  html += '</div>';
+  document.getElementById('content').innerHTML = html;
 }
 
 function isSpecialOn(it) {
@@ -276,7 +224,69 @@ function getItemAmt(it) {
 
 function toggleYangu(divId) {
   yanguOpen[divId] = !yanguOpen[divId];
+  renderYanguItems(); calc();
+}
+
+/* ════════ 양우 모드 전환 ════════ */
+function switchToYangu() {
+  isYanguMode = true;
+  document.getElementById('normal-mode').classList.add('hidden');
+  document.getElementById('yangu-mode').classList.remove('hidden');
+  document.getElementById('summary-title').textContent = '🏢 양우아파트 견적 요약';
+  renderYanguItems(); calc();
+}
+
+function switchToNormal() {
+  isYanguMode = false;
+  document.getElementById('normal-mode').classList.remove('hidden');
+  document.getElementById('yangu-mode').classList.add('hidden');
+  document.getElementById('summary-title').textContent = '견적 요약';
   renderItems(); calc();
+}
+
+function renderYanguItems() {
+  const catData = DATA['양우아파트'];
+  if (!catData) return;
+  const colorClass = 'cat-yangu';
+  let html = renderYanguSelector() + `<div class="yangu-accordion cat-zone ${colorClass}">`;
+  let currentGroup = null;
+  let groupItems = [];
+  let currentDivId = null;
+
+  const flush = () => {
+    if (!currentGroup) return;
+    const isOpen = yanguOpen[currentDivId] !== false;
+    const selCount = groupItems.filter(it => sel[it.id]?.on || isSpecialOn(it)).length;
+    const selAmt = groupItems.reduce((s, it) => s + getItemAmt(it), 0);
+    html += `<div class="yacc-section${isOpen?' open':''}">
+      <div class="yacc-header" onclick="toggleYangu('${currentDivId}')">
+        <span class="yacc-title">${currentGroup}</span>
+        <div class="yacc-meta">
+          ${selCount>0?`<span class="yacc-sel-badge">${selCount}개 선택</span>`:''}
+          ${selAmt>0?`<span class="yacc-amt">${fmt(selAmt)}원</span>`:''}
+        </div>
+        <span class="yacc-arrow">${isOpen?'▲':'▼'}</span>
+      </div>
+      <div class="yacc-body">
+        <div class="items">${groupItems.map(it => renderItem(it)).join('')}</div>
+      </div>
+    </div>`;
+    groupItems = [];
+  };
+
+  catData.items.forEach(it => {
+    if (it.type === 'divider') {
+      flush();
+      currentGroup = it.label || '';
+      currentDivId = it.id;
+      if (!(it.id in yanguOpen)) yanguOpen[it.id] = true;
+    } else {
+      groupItems.push(it);
+    }
+  });
+  flush();
+  html += '</div>';
+  document.getElementById('yangu-content').innerHTML = html;
 }
 
 /* ════════ 양우 템플릿 선택 UI ════════ */
@@ -316,7 +326,7 @@ function applyYanguTemplate(key) {
       sel[id].q  = state.q || 1;
     }
   });
-  renderItems(); calc();
+  renderYanguItems(); calc();
 }
 
 function resetYanguTemplate() {
@@ -975,7 +985,12 @@ function calcTotals() {
   const catMap = {};
   const rows = []; // { catName, label, detail, qty, u, unitP, amt }
 
-  Object.entries(DATA).forEach(([catName, cat]) => {
+  // 양우 모드면 양우아파트만, 일반 모드면 양우아파트 제외
+  const dataToCalc = isYanguMode
+    ? { '양우아파트': DATA['양우아파트'] }
+    : Object.fromEntries(Object.entries(DATA).filter(([k]) => k !== '양우아파트'));
+
+  Object.entries(dataToCalc).forEach(([catName, cat]) => {
     cat.items.forEach(it => {
       if (it.pct) return;
       if (it.type === 'divider') return;

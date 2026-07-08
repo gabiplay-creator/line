@@ -39,14 +39,36 @@
 </div>
 
 <div class="wrap">
-  <!-- 탭 + 항목 -->
-  <div class="tabs" id="tabs"></div>
-  <div id="content"></div>
+  <!-- 일반 견적 모드 -->
+  <div id="normal-mode">
+    <div class="tabs-row">
+      <div class="tabs" id="tabs"></div>
+      <button class="yangu-switch-btn" id="btn-yangu-mode" onclick="switchToYangu()">
+        🏢 양우아파트 견적
+      </button>
+    </div>
+    <div id="content"></div>
+  </div>
 
-  <!-- 견적 요약 -->
+  <!-- 양우아파트 독립 모드 -->
+  <div id="yangu-mode" class="hidden">
+    <div class="yangu-mode-header">
+      <div class="yangu-mode-title">
+        <span class="yangu-mode-icon">🏢</span>
+        <div>
+          <div class="yangu-mode-name">양우아파트 견적 계산기</div>
+          <div class="yangu-mode-sub">32평 (105㎡) 기준 · 독립 계산</div>
+        </div>
+      </div>
+      <button class="yangu-back-btn" onclick="switchToNormal()">← 일반 견적으로</button>
+    </div>
+    <div id="yangu-content"></div>
+  </div>
+
+  <!-- 견적 요약 (공통) -->
   <div class="summary">
     <div class="summary-header">
-      <span class="summary-title">견적 요약</span>
+      <span class="summary-title" id="summary-title">견적 요약</span>
       <button class="btn-reset" id="btn-reset">초기화</button>
     </div>
     <div class="sgrid" id="scards"></div>
