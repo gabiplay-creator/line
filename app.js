@@ -1062,6 +1062,14 @@ function renderQuoteDoc(totals) {
   if (!totals) totals = calcTotals();
   const { sub, vat, total, catMap, rows, nego, subAfterNego, vatAfterNego, totalAfterNego } = totals;
 
+  // 계약 라벨 항상 현재 payRatio로 갱신
+  const r = payRatio;
+  document.querySelectorAll('.qc-label-deposit').forEach(el => el.textContent = `계약금 (${r.deposit}%)`);
+  document.querySelectorAll('.qc-label-mid').forEach(el => el.textContent = `중도금 (${r.mid}%)`);
+  document.querySelectorAll('.qc-label-final').forEach(el => el.textContent = `잔금 (${r.final}%)`);
+  const noteText = `계약금 ${r.deposit}%, 중도금 ${r.mid}%, 잔금 ${r.final}%`;
+  ['pay-note-d','pay-note-s'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=noteText; });
+
   const clientDate   = document.getElementById('clientDate').value || '';
   const clientName   = document.getElementById('clientName').value || '';
   const clientPhone  = document.getElementById('clientPhone').value || '';
@@ -1125,14 +1133,9 @@ function renderQuoteDoc(totals) {
   ['qf-vat-d','qf-vat-s'].forEach(id => document.getElementById(id).textContent = fmtW(vatAfterNego));
   ['qf-total-d','qf-total-s'].forEach(id => document.getElementById(id).textContent = fmtW(totalAfterNego));
 
-  const r = payRatio;
   const dep = Math.round(totalAfterNego * r.deposit / 100);
   const mid = Math.round(totalAfterNego * r.mid / 100);
   const fin = Math.round(totalAfterNego * r.final / 100);
-  // 라벨도 비율 표시로 갱신
-  document.querySelectorAll('.qc-label-deposit').forEach(el => el.textContent = `계약금 (${r.deposit}%)`);
-  document.querySelectorAll('.qc-label-mid').forEach(el => el.textContent = `중도금 (${r.mid}%)`);
-  document.querySelectorAll('.qc-label-final').forEach(el => el.textContent = `잔금 (${r.final}%)`);
   ['qc-deposit-d','qc-deposit-s'].forEach(id => document.getElementById(id).textContent = fmtW(dep));
   ['qc-mid-d','qc-mid-s'].forEach(id => document.getElementById(id).textContent = fmtW(mid));
   ['qc-final-d','qc-final-s'].forEach(id => document.getElementById(id).textContent = fmtW(fin));
