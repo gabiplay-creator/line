@@ -336,6 +336,7 @@ const DATA = {
     { id:"yw_dem_bdr",n:"욕실 올철거",    d:"타일 완전 철거 + 방수 포함",       type:"stepper", u:"실", p:800000  },
     { id:"yw_dem6",  n:"폐기물 (2대)",    d:"1톤 트럭 2대 기준",                type:"simple",  u:"식", p:900000  },
     { id:"yw_dem7",  n:"폐기물 (3대)",    d:"1톤 트럭 3대 기준",                type:"simple",  u:"식", p:1350000 },
+    { id:"yw_ex1", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
 
     // ── 2. 설비 ──
     { id:"yw_div2", n:"", d:"", type:"divider", label:"② 설비" },
@@ -345,6 +346,7 @@ const DATA = {
     { id:"yw_plm4",  n:"우수관 교체",     d:"개당 350,000원",                   type:"stepper", u:"개", p:350000  },
     { id:"yw_plm5",  n:"거실 확장 (단열포함)", d:"2,500,000원",                type:"simple",  u:"식", p:2500000 },
     { id:"yw_plm6",  n:"방 확장 (단열포함)",   d:"개당 2,000,000원",           type:"stepper", u:"개", p:2000000 },
+    { id:"yw_ex2", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
 
     // ── 3. 창호 ──
     { id:"yw_div3a", n:"", d:"", type:"divider", label:"③ 창호" },
@@ -355,6 +357,7 @@ const DATA = {
     { id:"yw_win5",  n:"창호 철거비",     d:"기존 창호 철거 + 폐기물",          type:"simple",  u:"식", p:400000  },
     { id:"yw_win6",  n:"방범창 900×1200", d:"고구려시스템",                     type:"stepper", u:"개", p:329000  },
     { id:"yw_win7",  n:"방범창 거실 1200×2100",d:"고구려시스템",               type:"stepper", u:"개", p:467000  },
+    { id:"yw_ex3", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
 
     // ── 4. 중문 ──
     { id:"yw_div3", n:"", d:"", type:"divider", label:"④ 중문" },
@@ -366,6 +369,7 @@ const DATA = {
     { id:"yw_mid_sz",n:"중문 사이즈 추가",d:"1개당 30,000원",                   type:"stepper", u:"개", p:30000   },
     { id:"yw_mid_gn",n:"중문 간살",       d:"400,000원",                        type:"simple",  u:"식", p:400000  },
     { id:"yw_mid_dp",n:"중문 댐퍼",       d:"130,000원",                        type:"simple",  u:"식", p:130000  },
+    { id:"yw_ex4", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
 
     // ── 5. 목공 ──
     { id:"yw_div4", n:"", d:"", type:"divider", label:"⑤ 목공" },
@@ -378,6 +382,7 @@ const DATA = {
     { id:"yw_carp4", n:"단열 (1면당)",    d:"외벽 목공 단열",                   type:"stepper", u:"면", p:300000  },
     { id:"yw_carp5", n:"천장 작업",       d:"공용부 천장+커튼박스",             type:"simple",  u:"식", p:600000  },
     { id:"yw_carp6", n:"아트월 (반매립장)",d:"800,000원",                        type:"simple",  u:"식", p:800000  },
+    { id:"yw_ex5", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
 
     // ── 6. 욕실 ──
     { id:"yw_div5", n:"", d:"", type:"divider", label:"⑥ 욕실 (거실·안방)" },
@@ -398,18 +403,21 @@ const DATA = {
     { id:"yw_bt12",  n:"베란다 벽면 타일",d:"베란다 옆면 타일 교체",            type:"stepper", u:"개소", p:450000 },
     { id:"yw_btw1",  n:"욕실 방수 1차",   d:"개소당 200,000원",                 type:"stepper", u:"개소", p:200000 },
     { id:"yw_btw2",  n:"욕실 방수 2~3차", d:"단독 400,000원",                   type:"stepper", u:"개소", p:400000 },
+    { id:"yw_ex6", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
 
     // ── 7. 타일 ──
     { id:"yw_div7", n:"", d:"", type:"divider", label:"⑦ 타일" },
     { id:"yw_tl1",   n:"현관 타일 600×600",  d:"포세린/폴리싱 기준",           type:"simple",  u:"식", p:250000  },
     { id:"yw_tl2",   n:"주방벽 타일 600×600",d:"포세린 기준",                  type:"simple",  u:"식", p:350000  },
     { id:"yw_tl3",   n:"발코니 타일",        d:"EA당 200,000원",               type:"stepper", u:"EA", p:200000  },
+    { id:"yw_ex7", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
 
     // ── 8. 도배 ──
     { id:"yw_div8", n:"", d:"", type:"divider", label:"⑧ 도배" },
     { id:"yw_wp1",   n:"32평 (7품) — 도배지 포함", d:"340,000원",              type:"simple",  u:"식", p:3400000 },
     { id:"yw_wp2",   n:"42평 (9품) — 도배지 포함", d:"380,000원",              type:"simple",  u:"식", p:3800000 },
     { id:"yw_wp3",   n:"품 추가",           d:"1품당 300,000원",               type:"stepper", u:"품", p:300000  },
+    { id:"yw_ex8", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
 
     // ── 9. 마루·바닥재 ──
     { id:"yw_div9", n:"", d:"", type:"divider", label:"⑨ 마루 · 바닥재" },
@@ -422,6 +430,7 @@ const DATA = {
     { id:"yw_fl7",   n:"대진장판 2.2T",    d:"드림크리마 마필 시공포함",        type:"simple",  u:"식", p:1177600 },
     { id:"yw_fl8",   n:"대진장판 3.2T",    d:"시공포함",                       type:"simple",  u:"식", p:1846400 },
     { id:"yw_fl9",   n:"LX 지아자연애 2.2T장판",d:"시공포함",                  type:"simple",  u:"식", p:1667200 },
+    { id:"yw_ex9", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
 
     // ── 10. 전기·조명 ──
     { id:"yw_div10", n:"", d:"", type:"divider", label:"⑩ 전기·조명" },
@@ -433,6 +442,7 @@ const DATA = {
     { id:"yw_el5",   n:"실링팬",           d:"설치비 포함",                    type:"stepper", u:"개", p:120000  },
     { id:"yw_el6",   n:"콘센트 신설",      d:"15만/개소",                      type:"stepper", u:"개소", p:150000 },
     { id:"yw_el7",   n:"스위치 신설",      d:"10만/개소",                      type:"stepper", u:"개소", p:100000 },
+    { id:"yw_ex10", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
 
     // ── 11. 가구·설비 ──
     { id:"yw_div11", n:"", d:"", type:"divider", label:"⑪ 가구·설비" },
@@ -442,6 +452,7 @@ const DATA = {
     { id:"yw_fu3",   n:"신발장",           d:"중·하부 + 조명",                 type:"simple",  u:"식", p:800000  },
     { id:"yw_fu4",   n:"붙박이장",         d:"제작+설치",                      type:"stepper", u:"개", p:500000  },
     { id:"yw_fu5",   n:"탄성 코트",        d:"발코니 1개소 프리미엄 세라믹",    type:"stepper", u:"개소", p:450000 },
+    { id:"yw_ex11", n:"기타 / 네고", d:"수기 메모 + 금액 입력 · 네고 마이너스 처리", type:"cat-extra", special:true },
 
     // ── 12. 기타 ──
     { id:"yw_div13", n:"", d:"", type:"divider", label:"⑫ 기타" },
