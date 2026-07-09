@@ -316,7 +316,7 @@ function applyYanguTemplate(key) {
   yanguTemplate = key;
   const tmpl = YANGU_TEMPLATES[key];
   // 모든 양우 항목 초기화
-  Object.values(DATA['양우아파트'].items).forEach(it => {
+  DATA['양우아파트'].items.forEach(it => {
     if (sel[it.id]) sel[it.id].on = false;
   });
   // 템플릿 항목 적용
@@ -564,7 +564,11 @@ function toggleBathOpt(idx, key) {
   if (bathRooms[idx]) { bathRooms[idx].opts[key] = !bathRooms[idx].opts[key]; requestAnimationFrame(() => { renderItems(); calc(); }); }
 }
 function setBathFan(idx, val) {
-  if (bathRooms[idx]) { bathRooms[idx].opts.fan = parseInt(val)||0; calc(); }
+  if (bathRooms[idx]) {
+    bathRooms[idx].opts.fan = parseInt(val)||0;
+    if (isYanguMode) renderYanguItems();
+    calc();
+  }
 }
 
 /* ════════ 카테고리별 기타 / 네고 렌더 ════════ */
@@ -929,7 +933,8 @@ function renderAutoWaste(it, isOn) {
 function adjAutoLabor(d) {
   const s = sel['dem_labor'];
   s.val = (s.val || 0) + d;
-  renderItems(); calc();
+  if (isYanguMode) { renderYanguItems(); } else { renderItems(); }
+  calc();
 }
 function adjAutoWaste(d) {
   const s = sel['dem_waste'];
@@ -945,10 +950,9 @@ function adjAutoWaste(d) {
 /* ════════ 이벤트 바인딩 — DOMContentLoaded에서 wrap에 딱 한 번 등록 ════════ */
 function initItemEvents() {
   document.querySelector('.wrap').addEventListener('click', e => {
-    const itemEl = e.target.closest('#content .item[data-id]');
+    // 일반 탭 or 양우 탭 모두 감지
+    const itemEl = e.target.closest('#content .item[data-id], #yangu-content .item[data-id]');
     if (!itemEl) return;
-    // 내부 조작 영역 클릭 시 togItem 실행 안 함
-    // 내부 조작 영역(버튼/입력/선택) 클릭 시에만 togItem 실행 안 함
     const stopZones = '.qty-row,.floor-demo-grid,.fd-row,.fd-qty,.fd-check,.auto-adjust-row,.bath-demo-grid,.bath-type-btns,.bath-opts-grid,.bath-fan-row,.bath-counter,.cat-extra-grid,.nego-input-row,.client-info-box,.area-row,.summary,.quote-actions,.quote-doc';
     if (e.target.closest(stopZones)) return;
     togItem(itemEl.dataset.id);
@@ -969,10 +973,11 @@ function togItem(id) {
     if (it?.type === 'select-price') s.selectIdx = 0;
     if (it?.type === 'auto-labor' || it?.type === 'auto-waste') s.val = 0;
   }
-  renderItems(); calc();
+  if(isYanguMode){renderYanguItems();}else{renderItems();}
+  calc();
 }
-function adjQ(id, d) { const s = sel[id]; s.q = Math.max(1, s.q+d); renderItems(); calc(); }
-function setQv(id, v) { sel[id].q = Math.max(1, parseInt(v)||1); calc(); }
+function adjQ(id, d) { const s = sel[id]; if(!s) return; s.q = Math.max(1, (s.q||1)+d); if(isYanguMode){renderYanguItems();}else{renderItems();} calc(); }
+function setQv(id, v) { if(!sel[id]) return; sel[id].q = Math.max(1, parseInt(v)||1); if(isYanguMode){renderYanguItems();}else{renderItems();} calc(); }
 function setVal(id, v) { sel[id].val = parseFloat(v)||0; calc(); }
 function setSelect(id, v) { sel[id].selectIdx = parseInt(v); calc(); }
 function toggleFD(fid) { const fs=floorDemoSel[fid]; fs.on=!fs.on; renderItems(); calc(); }
