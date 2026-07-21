@@ -1375,89 +1375,229 @@ function setPrintMode(m) {
 }
 
 /* ════════ 엑셀 다운로드 ════════ */
-function downloadExcel() {
-  const { sub, vat, total, rows, nego, subAfterNego, vatAfterNego, totalAfterNego } = calcTotals();
-  const clientDate  = document.getElementById('clientDate').value || today();
-  const clientName  = document.getElementById('clientName').value || '고객';
-  const clientPhone = document.getElementById('clientPhone').value || '';
-  const clientAddr  = document.getElementById('clientAddr').value || '';
-  const clientPeriod= document.getElementById('clientPeriod').value || '';
-  const clientNote  = document.getElementById('clientNote').value || '';
-
-  const wb = XLSX.utils.book_new();
-
-  // ── 시트1: 상세 견적서 ──
-  const d = [];
-  d.push(['라인 인테리어','','','','','견 적 서']);
-  d.push([]);
-  d.push(['의뢰일', clientDate, '', '상호', '라인 인테리어', '']);
-  d.push(['고객명/연락처', `${clientName} / ${clientPhone}`, '', '등록번호', '296-24-02323', '']);
-  d.push(['주소/평형', clientAddr, '', '담당자', '라인 인테리어', '']);
-  d.push(['시공예상기간', clientPeriod, '', '연락처', '010-6420-3155', '']);
-  d.push(['특이사항', clientNote, '', '', '', '']);
-  d.push([]);
-  d.push(['품명','내용','단위','수량','단가','견적가']);
+async function downloadExcel() {
+  const { sub, rows, nego, subAfterNego, vatAfterNego, totalAfterNego } = calcTotals();
+  const clientDate   = document.getElementById('clientDate').value || today();
+  const clientName   = document.getElementById('clientName').value || '고객';
+  const clientPhone  = document.getElementById('clientPhone').value || '';
+  const clientAddr   = document.getElementById('clientAddr').value || '';
+  const clientPeriod = document.getElementById('clientPeriod').value || '';
+  const clientNote   = document.getElementById('clientNote').value || '';
+  const er = payRatio;
 
   const grouped = {};
   rows.forEach(r => { if (!grouped[r.catName]) grouped[r.catName]=[]; grouped[r.catName].push(r); });
 
-  Object.entries(grouped).forEach(([cat, list]) => {
-    const catTotal = list.reduce((s,r)=>s+r.amt,0);
-    d.push([cat,'','','','',catTotal]);
-    list.forEach(r => d.push(['', `${r.label}${r.detail?' ('+r.detail+')':''}`, r.u, r.qty, r.unitP||'', r.amt]));
-  });
-  d.push([]);
-  d.push(['소계 (부가세 제외)','','','','',sub]);
-  if (nego > 0) d.push(['네고 / 할인 (차감)','','','','', -nego]);
-  d.push(['부가세 (10%)','','','','',vatAfterNego]);
-  d.push(['총 공사 금액','','','','',totalAfterNego]);
-  d.push([]);
-  const er = payRatio;
-  d.push([`계약금 (${er.deposit}%)`, Math.round(totalAfterNego*er.deposit/100), '', `중도금 (${er.mid}%)`, Math.round(totalAfterNego*er.mid/100), `잔금 (${er.final}%)`]);
-  d.push(['', '', '', '', '', Math.round(totalAfterNego*er.final/100)]);
-  d.push([]);
-  d.push(['* 부가세 별도 견적입니다.']);
-  d.push(['* 본 업체는 전문 기공 인력만 시공합니다.']);
+  const wb = new ExcelJS.Workbook();
+  wb.creator = '라인 인테리어';
+  wb.created = new Date();
 
-  const ws1 = XLSX.utils.aoa_to_sheet(d);
-  ws1['!cols'] = [{wch:14},{wch:38},{wch:8},{wch:8},{wch:14},{wch:14}];
-  applyNumFmt(ws1, d);
-  XLSX.utils.book_append_sheet(wb, ws1, '상세견적서');
+  // ── 헬퍼 ──
+  const BLK  = { type:'pattern', pattern:'solid', fgColor:{argb:'FF1C1917'} };
+  const BLUE = { type:'pattern', pattern:'solid', fgColor:{argb:'FF2563EB'} };
+  const GRY  = { type:'pattern', pattern:'solid', fgColor:{argb:'FFF4F4F5'} };
+  const CAT  = { type:'pattern', pattern:'solid', fgColor:{argb:'FFE8E5E2'} };
+  const WH   = { type:'pattern', pattern:'solid', fgColor:{argb:'FFFFFFFF'} };
+  const thin = { style:'thin', color:{argb:'FFCCCCCC'} };
+  const med  = { style:'medium', color:{argb:'FF888888'} };
+  const thk  = { style:'thick', color:{argb:'FF1C1917'} };
+  const bord = (t,r,b,l) => ({ top:t, right:r, bottom:b, left:l });
+  const numFmt = '#,##0';
+  const fontWh = { name:'맑은 고딕', size:10, bold:true, color:{argb:'FFFFFFFF'} };
+  const fontBk = { name:'맑은 고딕', size:10, bold:true, color:{argb:'FF1C1917'} };
+  const fontNm = { name:'맑은 고딕', size:9,  color:{argb:'FF333333'} };
+  const fontSm = { name:'맑은 고딕', size:8,  color:{argb:'FF666666'} };
+  const fontBl = { name:'맑은 고딕', size:10, bold:true, color:{argb:'FF2563EB'} };
+  const alignRC = { horizontal:'right', vertical:'middle' };
+  const alignCC = { horizontal:'center', vertical:'middle' };
+  const alignLC = { horizontal:'left', vertical:'middle' };
 
-  // ── 시트2: 간략 견적서 ──
-  const s2 = [];
-  s2.push(['라인 인테리어','','','','','견 적 서 (요약)']);
-  s2.push([]);
-  s2.push(['의뢰일', clientDate, '', '상호', '라인 인테리어','']);
-  s2.push(['고객명/연락처', `${clientName} / ${clientPhone}`, '', '등록번호', '296-24-02323','']);
-  s2.push(['주소/평형', clientAddr, '', '담당자', '라인 인테리어','']);
-  s2.push([]);
-  s2.push(['항목','','','','','금액']);
-  Object.entries(grouped).forEach(([cat, list]) => {
-    const catTotal = list.reduce((s,r)=>s+r.amt,0);
-    s2.push([cat,'','','','',catTotal]);
-  });
-  s2.push([]);
-  s2.push(['소계','','','','',sub]);
-  s2.push(['부가세','','','','',vat]);
-  s2.push(['총 공사 금액','','','','',total]);
+  function buildSheet(wb, sheetName, isDetail) {
+    const ws = wb.addWorksheet(sheetName, { views:[{showGridLines:false}] });
+    ws.columns = [
+      {width:14}, {width:isDetail?40:30}, {width:8}, {width:8}, {width:14}, {width:16}
+    ];
 
-  const ws2 = XLSX.utils.aoa_to_sheet(s2);
-  ws2['!cols'] = [{wch:20},{wch:20},{wch:8},{wch:8},{wch:14},{wch:14}];
-  applyNumFmt(ws2, s2);
-  XLSX.utils.book_append_sheet(wb, ws2, '요약견적서');
+    let r = 1;
+    const C = (ri, ci) => ws.getCell(ri, ci);
+    const merge = (r1,c1,r2,c2) => ws.mergeCells(r1,c1,r2,c2);
+    const setR = (ri, height=18) => { ws.getRow(ri).height = height; };
 
+    // ── 1행: 로고 + 제목 ──
+    setR(r, 30);
+    merge(r,1,r,3); C(r,1).value='라인 인테리어';
+    C(r,1).font = { name:'맑은 고딕', size:16, bold:true, color:{argb:'FF2563EB'} };
+    C(r,1).alignment = alignLC;
+    merge(r,4,r,6); C(r,4).value = isDetail ? '견  적  서' : '견  적  서  (요약)';
+    C(r,4).font = { name:'맑은 고딕', size:16, bold:true, color:{argb:'FF1C1917'}, italic:true };
+    C(r,4).alignment = alignRC;
+    r++;
+
+    // ── 구분선 ──
+    setR(r, 4);
+    for(let c=1;c<=6;c++){C(r,c).fill=BLK; C(r,c).border=bord(thk,thk,thk,thk);}
+    merge(r,1,r,6);
+    r++;
+
+    // ── 고객 정보 테이블 ──
+    const infoRows = [
+      ['의뢰일', clientDate, '상호', '라인 인테리어'],
+      ['고객명 / 연락처', `${clientName} / ${clientPhone}`, '등록번호', '296-24-02323'],
+      ['주소 / 평형', clientAddr, '담당자', '라인 인테리어'],
+      ['시공 예상기간', clientPeriod, '연락처', '010-6420-3155'],
+    ];
+    if (isDetail) infoRows.push(['특이사항', clientNote, '', '']);
+
+    infoRows.forEach(([la, va, lb, vb]) => {
+      setR(r, 17);
+      merge(r,1,r,1); C(r,1).value = la;
+      C(r,1).font = {...fontBk, size:9}; C(r,1).fill = GRY; C(r,1).alignment = alignLC;
+      merge(r,2,r,3); C(r,2).value = va;
+      C(r,2).font = fontNm; C(r,2).fill = WH; C(r,2).alignment = alignLC;
+      C(r,4).value = lb; C(r,4).font = {...fontBk,size:9}; C(r,4).fill = GRY; C(r,4).alignment = alignLC;
+      merge(r,5,r,6); C(r,5).value = vb;
+      C(r,5).font = fontNm; C(r,5).fill = WH; C(r,5).alignment = alignLC;
+      for(let c=1;c<=6;c++) C(r,c).border = bord(thin,thin,thin,thin);
+      r++;
+    });
+    r++;
+
+    // ── 헤더 행 ──
+    setR(r, 20);
+    const hdrs = isDetail
+      ? ['품명','내용','단위','수량','단가','견적가']
+      : ['항목','','','','','금액'];
+    hdrs.forEach((h,i) => {
+      C(r, i+1).value = h;
+      C(r, i+1).font  = fontWh;
+      C(r, i+1).fill  = BLK;
+      C(r, i+1).alignment = i>=2 ? alignCC : alignLC;
+      C(r, i+1).border = bord(med,med,med,med);
+    });
+    if (!isDetail) merge(r,1,r,5);
+    r++;
+
+    // ── 데이터 행 ──
+    Object.entries(grouped).forEach(([cat, list]) => {
+      const catTotal = list.reduce((s,x)=>s+x.amt,0);
+      // 카테고리 헤더
+      setR(r, 18);
+      merge(r,1,r,5); C(r,1).value = cat;
+      C(r,1).font = fontBk; C(r,1).fill = CAT; C(r,1).alignment = alignLC;
+      C(r,6).value = catTotal; C(r,6).numFmt = numFmt;
+      C(r,6).font = fontBk; C(r,6).fill = CAT; C(r,6).alignment = alignRC;
+      for(let c=1;c<=6;c++) C(r,c).border = bord(thin,thin,thin,thin);
+      r++;
+
+      if (isDetail) {
+        list.forEach(item => {
+          setR(r, 16);
+          C(r,1).value = '';
+          C(r,2).value = item.label + (item.detail ? `
+(${item.detail})` : '');
+          C(r,2).font  = { name:'맑은 고딕', size:9, color:{argb:'FF27272A'} };
+          C(r,2).alignment = { ...alignLC, wrapText:true };
+          C(r,3).value = item.u; C(r,3).alignment = alignCC; C(r,3).font = fontNm;
+          C(r,4).value = item.qty; C(r,4).alignment = alignCC; C(r,4).font = fontNm;
+          C(r,5).value = item.unitP||0; C(r,5).numFmt = numFmt; C(r,5).alignment = alignRC;
+          C(r,5).font = { name:'맑은 고딕', size:9, color:{argb:'FF78716C'} };
+          C(r,6).value = item.amt; C(r,6).numFmt = numFmt; C(r,6).alignment = alignRC;
+          C(r,6).font = item.amt < 0
+            ? { name:'맑은 고딕', size:9, bold:true, color:{argb:'FFDC2626'} }
+            : { name:'맑은 고딕', size:9, bold:true, color:{argb:'FF1C1917'} };
+          for(let c=1;c<=6;c++) C(r,c).border = bord(thin,thin,thin,thin);
+          r++;
+        });
+      }
+    });
+
+    // ── 소계/부가세/합계 ──
+    setR(r, 5); r++;
+
+    const totRows = [
+      ['소 계 (부가세 제외)', subAfterNego + nego, false],
+    ];
+    if (nego > 0) totRows.push([`네고 / 할인`, -nego, true]);
+    totRows.push(['부가세 (10%)', vatAfterNego, false]);
+
+    totRows.forEach(([lbl, val, isRed]) => {
+      setR(r, 16);
+      merge(r,1,r,5); C(r,1).value = lbl;
+      C(r,1).font = {...fontBk, size:9}; C(r,1).fill = GRY;
+      C(r,1).alignment = alignRC;
+      C(r,6).value = val; C(r,6).numFmt = numFmt;
+      C(r,6).font = { name:'맑은 고딕', size:10, bold:true,
+        color:{argb: isRed ? 'FFDC2626':'FF1C1917'} };
+      C(r,6).alignment = alignRC;
+      for(let c=1;c<=6;c++) C(r,c).border = bord(thin,thin,thin,thin);
+      r++;
+    });
+
+    // 총 공사 금액 (강조)
+    setR(r, 24);
+    merge(r,1,r,5); C(r,1).value = '총  공사  금액';
+    C(r,1).font = { name:'맑은 고딕', size:11, bold:true, color:{argb:'FFFFFFFF'} };
+    C(r,1).fill = BLK; C(r,1).alignment = alignRC;
+    C(r,6).value = totalAfterNego; C(r,6).numFmt = numFmt;
+    C(r,6).font = { name:'맑은 고딕', size:13, bold:true, color:{argb:'FFFFFFFF'} };
+    C(r,6).fill = BLUE; C(r,6).alignment = alignRC;
+    for(let c=1;c<=6;c++) C(r,c).border = bord(thk,thk,thk,thk);
+    r++;
+
+    // ── 계약금/중도금/잔금 ──
+    setR(r, 5); r++;
+    setR(r, 20);
+    const dep = Math.round(totalAfterNego*er.deposit/100);
+    const mid = Math.round(totalAfterNego*er.mid/100);
+    const fin = Math.round(totalAfterNego*er.final/100);
+    const pCells = [
+      [`계약금 (${er.deposit}%)`, dep],
+      [`중도금 (${er.mid}%)`,     mid],
+      [`잔금 (${er.final}%)`,     fin],
+    ];
+    const cw = [1,3,5];
+    const vw = [2,4,6];
+    pCells.forEach(([lbl,val],i) => {
+      C(r,cw[i]).value = lbl; C(r,cw[i]).font = {...fontBk,size:9};
+      C(r,cw[i]).fill = GRY; C(r,cw[i]).alignment = alignCC;
+      C(r,vw[i]).value = val; C(r,vw[i]).numFmt = numFmt;
+      C(r,vw[i]).font = fontBl; C(r,vw[i]).alignment = alignRC;
+      C(r,cw[i]).border = bord(med,thin,med,med);
+      C(r,vw[i]).border = bord(med,med,med,thin);
+    });
+    r++;
+
+    // ── 비고 ──
+    setR(r, 5); r++;
+    [`부가세 별도 견적입니다. (계약금 ${er.deposit}%, 중도금 ${er.mid}%, 잔금 ${er.final}% 기준)`,
+     '본 업체는 전문 기공 인력만 시공합니다. (연습생, 외국인 인력 제한)'].forEach(txt => {
+      setR(r, 14);
+      merge(r,1,r,6); C(r,1).value = txt;
+      C(r,1).font = { name:'맑은 고딕', size:8, italic:true, color:{argb:'FF666666'} };
+      C(r,1).alignment = alignLC;
+      r++;
+    });
+
+    // ── 서명란 ──
+    setR(r, 5); r++;
+    setR(r, 22);
+    merge(r,1,r,3); C(r,1).value = '상기와 같이 계약합니다.';
+    C(r,1).font = {...fontBk, size:10};  C(r,1).alignment = alignLC;
+    merge(r,4,r,6); C(r,4).value = '계약자 서명 : _______________________';
+    C(r,4).font = fontBk; C(r,4).alignment = alignRC;
+  }
+
+  buildSheet(wb, '상세견적서', true);
+  buildSheet(wb, '요약견적서', false);
+
+  const buf = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
   const fname = `라인인테리어_견적서_${clientName}_${clientDate}.xlsx`;
-  XLSX.writeFile(wb, fname);
-}
-
-function applyNumFmt(ws, data) {
-  data.forEach((row, ri) => row.forEach((cell, ci) => {
-    if (typeof cell === 'number') {
-      const ref = XLSX.utils.encode_cell({r:ri, c:ci});
-      if (ws[ref]) ws[ref].z = '#,##0';
-    }
-  }));
+  a.download = fname;
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 /* ════════ 계약 비율 설정 ════════ */
